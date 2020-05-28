@@ -64,6 +64,12 @@ const accountSchema = mongoose.Schema(
   }
 );
 
+accountSchema.virtual('transactions', {
+  ref: 'Transaction',
+  foreignField: 'accountID',
+  localField: '_id',
+});
+
 const accountModel = mongoose.model('Account', accountSchema);
 
 module.exports = accountModel;

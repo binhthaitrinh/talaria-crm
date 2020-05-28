@@ -3,6 +3,9 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const itemRouter = require('./routes/itemRoutes');
+const transactionRouter = require('./routes/transactionRoutes');
+const accountRouter = require('./routes/accountRoutes');
+const globalErrorHandler = require('./controllers/errorController');
 
 const app = express();
 
@@ -17,5 +20,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/api/v1/items', itemRouter);
+app.use('/api/v1/transactions', transactionRouter);
+app.use('/ap1/v1/accounts', accountRouter);
+
+app.use(globalErrorHandler);
 
 module.exports = app;

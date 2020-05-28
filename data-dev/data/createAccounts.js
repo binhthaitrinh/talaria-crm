@@ -11,14 +11,6 @@ const accounts = [
     loginID: 'trinhthaibinh.ecom@gmail.com',
     balance: 372.61,
     addedAt: Date.now(),
-    transactionHistory: [
-      {
-        createdAt: new Date(2020, 4, 30, 10, 33),
-        amount: 30.0,
-        transactionType: 'spent',
-      },
-      { createdAt: Date.now(), amount: 40.0, transactionType: 'spent' },
-    ],
     notes: '',
     accountType: accountTypes[0],
     status: 'active',
@@ -29,7 +21,7 @@ const accounts = [
     loginID: 'btrinh27@student.cccd.edu',
     balance: 12.48,
     addedAt: Date.now(),
-    transactionHistory: [],
+
     notes: '',
     accountType: accountTypes[0],
     status: 'active',
@@ -40,7 +32,7 @@ const accounts = [
     loginID: 'thaibinh.trinh@student.cccd.edu',
     balance: 49.04,
     addedAt: Date.now(),
-    transactionHistory: [],
+
     notes: '',
     accountType: accountTypes[0],
     status: 'active',
@@ -51,7 +43,7 @@ const accounts = [
     loginID: 'tuongvo15694@gmail.com',
     balance: 400,
     addedAt: Date.now(),
-    transactionHistory: [],
+
     notes: '',
     accountType: accountTypes[0],
     status: 'active',
@@ -62,7 +54,7 @@ const accounts = [
     loginID: 'finoa_1709@yahoo.com',
     balance: 400,
     addedAt: Date.now(),
-    transactionHistory: [],
+
     notes: '',
     accountType: accountTypes[0],
     status: 'active',

@@ -1,20 +1,25 @@
 const Item = require('../models/itemModel');
+const catchAsync = require('../utils/catchAsync');
 
-exports.getAllItems = (req, res, next) => {};
+exports.getAllItems = catchAsync(async (req, res, next) => {
+  const items = await Item.find();
 
-exports.createItem = async (req, res, next) => {
-  console.log('creating...');
-  try {
-    const item = await Item.create(req.body);
+  res.status(200).json({
+    status: 'success',
+    results: items.length,
+    data: {
+      data: items,
+    },
+  });
+});
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        data: item,
-      },
-    });
-    console.log('done');
-  } catch (err) {
-    console.log(err);
-  }
-};
+exports.createItem = catchAsync(async (req, res, next) => {
+  const item = await Item.create(req.body);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: item,
+    },
+  });
+});

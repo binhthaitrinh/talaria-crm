@@ -55,11 +55,12 @@ const deleteData = async () => {
   try {
     if (process.argv[3] === '--item') {
       await Item.deleteMany();
+      console.log('Data deleted');
     } else if (process.argv[3] === '--account') {
       await Account.deleteMany();
+      console.log('Data deleted');
     }
 
-    console.log('Data deleted');
     process.exit();
   } catch (err) {
     console.log(err);

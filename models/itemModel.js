@@ -32,19 +32,19 @@ const itemSchema = mongoose.Schema({
     default: 0.0,
   },
   usShippingFee: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.0,
   },
   shippingToVNFee: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.0,
   },
   estimatedWeight: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.0,
   },
   actualWeight: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.0,
   },
   usVnRate: {
@@ -52,7 +52,7 @@ const itemSchema = mongoose.Schema({
     default: 23000,
   },
   costOfGoodsSold: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.7,
   },
   quantity: {
@@ -66,7 +66,10 @@ const itemSchema = mongoose.Schema({
     default: 'amazon',
   },
   invoiceLink: String,
-  // orderAccount
+  orderAccount: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Account',
+  },
   orderedDate: {
     type: Date,
     default: Date.now(),

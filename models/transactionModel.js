@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = mongoose.Schema({
-  transationType: {
+  transactionType: {
     type: String,
     enum: ['inflow', 'outflow'],
     required: [true, 'Transaction must have a type'],

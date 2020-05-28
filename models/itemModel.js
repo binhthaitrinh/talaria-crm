@@ -28,7 +28,7 @@ const itemSchema = mongoose.Schema({
     required: [true, 'An Item must have a price'],
   },
   tax: {
-    type: Number,
+    type: mongoose.Decimal128,
     default: 0.0,
   },
   usShippingFee: {
@@ -51,14 +51,15 @@ const itemSchema = mongoose.Schema({
     type: Number,
     default: 23000,
   },
-  costOfGoodSold: {
+  costOfGoodsSold: {
     type: Number,
     default: 0.7,
   },
-  quantiy: {
+  quantity: {
     type: Number,
     default: 1,
   },
+  trackingLink: String,
   orderedWebsite: {
     type: String,
     enum: ['amazon', 'ebay', 'sephora', 'bestbuy', 'costco', 'walmart'],

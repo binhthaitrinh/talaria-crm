@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const itemRouter = require('./routes/itemRoutes');
 
 const app = express();
 
@@ -15,6 +16,6 @@ app.use(express.json());
 // parse data from URL encoded form
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
-app.get('/api/v1/items', (req, res) => console.log('connect to items api...'));
+app.use('/api/v1/items', itemRouter);
 
 module.exports = app;

@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const Item = require('../../models/itemModel');
 const Account = require('../../models/accountModel');
 const Transaction = require('../../models/transactionModel');
+const Paxful = require('../../models/paxfulModel');
 
 // Config path to config file
 dotenv.config({ path: `${__dirname}/../../config.env` });
@@ -29,6 +30,9 @@ const items = JSON.parse(fs.readFileSync(`${__dirname}/order.json`, 'utf-8'));
 const accounts = JSON.parse(
   fs.readFileSync(`${__dirname}/accounts.json`, 'utf-8')
 );
+const paxfuls = JSON.parse(
+  fs.readFileSync(`${__dirname}/paxful.json`, 'utf-8')
+);
 // const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
 // const reviews = JSON.parse(
 //   fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8')
@@ -43,6 +47,8 @@ const importData = async () => {
     } else if (process.argv[3] === '--account') {
       await Account.create(accounts);
       console.log('Data successfully loaded');
+    } else if (process.argv[3] === '--paxful') {
+      await Paxful.create(paxfuls);
     }
 
     process.exit();
@@ -62,6 +68,8 @@ const deleteData = async () => {
       console.log('Data deleted');
     } else if (process.argv[3] === '--transaction') {
       await Transaction.deleteMany();
+    } else if (process.argc[3] === '--paxful') {
+      await Paxful.deleteMany();
     }
 
     process.exit();

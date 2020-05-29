@@ -100,29 +100,65 @@ const itemSchema = mongoose.Schema({
   },
 });
 
-itemSchema.methods.createTransaction = async function () {
-  const { tax, usShippingFee, quantity, pricePerItem } = this;
+itemSchema.statics.createTransaction = async function (id) {
+  console.log('hello');
+  // const { tax, usShippingFee, quantity, pricePerItem } = this;
 
-  const totalCost =
-    pricePerItem * quantity * (1 + parseFloat(tax)) + usShippingFee;
+  // const totalCost =
+  //   pricePerItem * quantity * (1 + parseFloat(tax)) + usShippingFee;
 
-  let transaction = await Transaction.findOne({ itemID: this.id });
+  // console.log(totalCost);
 
-  if (transaction) {
-    transaction = await Transaction.findByIdAndUpdate(transaction.id, {
+  // let transaction = await Transaction.findOne({ itemID: this.id });
+
+  // if (transaction) {
+  //   transaction = await Transaction.findByIdAndUpdate(transaction.id, {
+  //     transactionType: 'outflow',
+  //     amount: totalCost,
+  //     accountID: this.orderAccount,
+  //     itemID: this.id,
+  //   });
+  // } else {
+  //   transaction = await Transaction.create({
+  //     transactionType: 'outflow',
+  //     amount: totalCost,
+  //     accountID: this.orderAccount,
+  //     itemID: this.id,
+  //   });
+  // }
+
+  const item = await this.aggregate([
+    {
+      $match: { _id: mongoose.Types.ObjectId(id) },
+    },
+    {
+      $project: {
+        orderAccount: 1,
+        total: {
+          // $add: ['$tax', '$usShippingFee', '$quantity', '$pricePerItem'],
+          $add: [
+            '$usShippingFee',
+            {
+              $multiply: ['$quantity', '$pricePerItem', { $add: [1, '$tax'] }],
+            },
+          ],
+        },
+      },
+    },
+  ]);
+
+  const transaction = await Transaction.findOneAndUpdate(
+    { itemID: id },
+    {
       transactionType: 'outflow',
-      amount: totalCost,
-      accountID: this.orderAccount,
-      itemID: this.id,
-    });
-  } else {
-    transaction = await Transaction.create({
-      transactionType: 'outflow',
-      amount: totalCost,
-      accountID: this.orderAccount,
-      itemID: this.id,
-    });
-  }
+      amount: parseFloat(item[0].total),
+      accountID: item[0].orderAccount,
+      itemID: item[0]._id,
+    },
+    { upsert: true, returnNewDocument: true, returnOriginal: false }
+  );
+
+  console.log(parseFloat(item[0].total));
 
   return transaction;
 };

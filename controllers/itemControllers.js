@@ -26,32 +26,7 @@ exports.createItem = catchAsync(async (req, res, next) => {
 });
 
 exports.chargeMoney = catchAsync(async (req, res, next) => {
-  // const item = await Item.findById(req.params.id);
-
-  // const transaction = await item.createTransaction();
-
-  // const item = await Item.aggregate([
-  //   {
-  //     $match: { _id: mongoose.Types.ObjectId(req.params.id) },
-  //   },
-  //   {
-  //     $project: {
-  //       total: {
-  //         // $add: ['$tax', '$usShippingFee', '$quantity', '$pricePerItem'],
-  //         $add: [
-  //           '$usShippingFee',
-  //           {
-  //             $multiply: ['$quantity', '$pricePerItem', { $add: [1, '$tax'] }],
-  //           },
-  //         ],
-  //       },
-  //     },
-  //   },
-  // ]);
-
   const transaction = await Item.createTransaction(req.params.id);
-
-  // console.log(parseFloat(item[0].total));
 
   res.status(200).json({
     status: 'success',

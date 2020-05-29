@@ -17,13 +17,13 @@ const transactionSchema = mongoose.Schema({
   accountID: {
     type: mongoose.Schema.ObjectId,
     ref: 'Account',
-    required: [true, 'Transaction must be associated with an account'],
+    // required: [true, 'Transaction must be associated with an account'],
   },
   itemID: {
     type: mongoose.Schema.ObjectId,
     ref: 'Item',
     unique: true,
-    required: [true, 'Transaction must be associated with an item'],
+    // required: [true, 'Transaction must be associated with an item'],
   },
 });
 

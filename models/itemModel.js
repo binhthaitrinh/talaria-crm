@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const Transaction = require('./transactionModel');
+const AppError = require('../utils/appError');
 
 const itemSchema = mongoose.Schema({
   link: {
@@ -97,6 +99,33 @@ const itemSchema = mongoose.Schema({
     type: String,
   },
 });
+
+itemSchema.methods.createTransaction = async function () {
+  const { tax, usShippingFee, quantity, pricePerItem } = this;
+
+  const totalCost =
+    pricePerItem * quantity * (1 + parseFloat(tax)) + usShippingFee;
+
+  let transaction = await Transaction.findOne({ itemID: this.id });
+
+  if (transaction) {
+    transaction = await Transaction.findByIdAndUpdate(transaction.id, {
+      transactionType: 'outflow',
+      amount: totalCost,
+      accountID: this.orderAccount,
+      itemID: this.id,
+    });
+  } else {
+    transaction = await Transaction.create({
+      transactionType: 'outflow',
+      amount: totalCost,
+      accountID: this.orderAccount,
+      itemID: this.id,
+    });
+  }
+
+  return transaction;
+};
 
 const Item = mongoose.model('Item', itemSchema);
 

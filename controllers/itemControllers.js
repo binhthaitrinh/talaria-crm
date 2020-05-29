@@ -23,3 +23,16 @@ exports.createItem = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.chargeMoney = catchAsync(async (req, res, next) => {
+  const item = await Item.findById(req.params.id);
+
+  const transaction = await item.createTransaction();
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: transaction,
+    },
+  });
+});

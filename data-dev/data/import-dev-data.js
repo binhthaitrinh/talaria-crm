@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Item = require('../../models/itemModel');
 const Account = require('../../models/accountModel');
+const Transaction = require('../../models/transactionModel');
 
 // Config path to config file
 dotenv.config({ path: `${__dirname}/../../config.env` });
@@ -59,6 +60,8 @@ const deleteData = async () => {
     } else if (process.argv[3] === '--account') {
       await Account.deleteMany();
       console.log('Data deleted');
+    } else if (process.argv[3] === '--transaction') {
+      await Transaction.deleteMany();
     }
 
     process.exit();

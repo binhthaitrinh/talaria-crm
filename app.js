@@ -6,6 +6,7 @@ const itemRouter = require('./routes/itemRoutes');
 const transactionRouter = require('./routes/transactionRoutes');
 const accountRouter = require('./routes/accountRoutes');
 const paxfulRouter = require('./routes/paxfulRoutes');
+const giftCardRouter = require('./routes/giftCardRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -25,6 +26,7 @@ app.use('/api/v1/items', itemRouter);
 app.use('/api/v1/transactions', transactionRouter);
 app.use('/api/v1/accounts', accountRouter);
 app.use('/api/v1/paxfuls', paxfulRouter);
+app.use('/api/v1/giftcards', giftCardRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

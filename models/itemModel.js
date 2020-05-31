@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const Transaction = require('./transactionModel');
+const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');
 
 const itemSchema = mongoose.Schema({
@@ -159,6 +160,103 @@ itemSchema.statics.createTransaction = async function (id) {
   );
 
   console.log(parseFloat(item[0].total));
+
+  const giftcards = await GiftCard.aggregate([
+    {
+      $match: {
+        remainingBalance: { $gt: 0 },
+      },
+    },
+    {
+      $sort: {
+        timeBuy: 1,
+      },
+    },
+    {
+      $project: {
+        partialBalance: 1,
+        remainingBalance: 1,
+      },
+    },
+  ]);
+  console.log(giftcards);
+  console.log(giftcards[0].partialBalance[0]);
+
+  let remaining = parseFloat(item[0].total);
+  let actualCost = 0;
+  let index = 0;
+
+  while (
+    remaining > parseFloat(giftcards[index].remainingBalance) &&
+    index < giftcards.length
+  ) {
+    let j = 0;
+    while (
+      remaining >
+        parseFloat(giftcards[index].partialBalance[j].remainingBalance) &&
+      j < giftcards[index].partialBalance.length
+    ) {
+      actualCost +=
+        parseFloat(giftcards[index].partialBalance[j].remainingBalance) *
+        parseFloat(giftcards[index].partialBalance[j].actualCostRate);
+      remaining -= giftcards[index].partialBalance[j].remainingBalance;
+      j++;
+    }
+    index++;
+  }
+  let j = 0;
+  while (
+    remaining >
+      parseFloat(giftcards[index].partialBalance[j].remainingBalance) &&
+    j < giftcards[index].partialBalance.length
+  ) {
+    actualCost =
+      Math.round(
+        (parseFloat(giftcards[index].partialBalance[j].remainingBalance) *
+          100000000 *
+          (parseFloat(giftcards[index].partialBalance[j].actualCostRate) *
+            100000000)) /
+          100000000 +
+          actualCost * 100000000
+      ) / 100000000;
+    console.log(actualCost);
+    remaining =
+      Math.round(
+        remaining * 100000000 -
+          giftcards[index].partialBalance[j].remainingBalance * 100000000
+      ) / 100000000;
+    j++;
+  }
+
+  actualCost =
+    Math.round(
+      (remaining *
+        100000000 *
+        (parseFloat(giftcards[index].partialBalance[j].actualCostRate) *
+          100000000)) /
+        100000000 +
+        actualCost * 100000000
+    ) / 100000000;
+
+  console.log(actualCost);
+
+  // const current = await GiftCard.aggregate([
+  //   {
+  //     $project: {
+  //       first: { $arrayElemAt: ['$partialBalance', 0] },
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       total: {
+  //         $multiply: ['$first.actualCostRate', '$first.remainingBalance'],
+  //       },
+  //     },
+  //   },
+  // ]);
+  // console.log('//////////////////////////////////////////////////////');
+  // console.log(parseFloat(current[0].total));
+  // console.log('//////////////////////////////////////////////////////');
 
   return transaction;
 };

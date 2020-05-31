@@ -56,71 +56,184 @@ giftCardSchema.pre('save', function (next) {
 });
 
 giftCardSchema.pre('save', async function (next) {
-  const query = Paxful.find({ remainingBalance: { $ne: 0 } }).sort({ date: 1 });
+  // const query = Paxful.find({ remainingBalance: { $ne: 0 } }).sort({ date: 1 });
 
-  let remaining = parseFloat(this.priceInBTC);
-  const total = parseFloat(this.priceInBTC);
-  let index = 0;
-  let paxful;
+  // Query paxful documents that have remaining > 0, sorted by date
+  const paxfuls = await Paxful.aggregate([
+    {
+      $match: {
+        'remainingBalance.amount': {
+          $gt: 0,
+        },
+      },
+    },
+    {
+      $sort: {
+        date: 1,
+      },
+    },
+    {
+      $project: {
+        remainingBalance: 1,
+        moneySpent: 1,
+      },
+    },
+  ]);
+
+  let remainingBtcNeeded = parseFloat(this.priceInBTC);
+  let remainingGc = parseFloat(this.giftCardValue);
+  const totalBtcNeeded = remainingBtcNeeded;
   const rates = [];
+  let index = 0;
 
-  const paxfuls = await query;
+  console.log(paxfuls.length);
 
-  while (remaining > parseFloat(paxfuls[index].remainingBalance)) {
-    paxful = paxfuls[index];
-    const balance = parseFloat(paxful.remainingBalance);
-    const moneySpent = parseFloat(paxful.moneySpent.amount);
-    const bitcoinSpent = parseFloat(paxful.btcAmount);
-    const rate =
+  // Keep taking BTC ufrom paxful transaction
+  while (
+    remainingBtcNeeded > parseFloat(paxfuls[index].remainingBalance.amount)
+  ) {
+    const paxful = paxfuls[index];
+    const vndBtcRate = parseFloat(paxful.remainingBalance.rating);
+    const remainingBtcInPaxful = parseFloat(paxful.remainingBalance.amount);
+    const vndGcRate =
       Math.round(
-        (moneySpent * total * 100000000) /
-          (bitcoinSpent * parseFloat(this.giftCardValue))
+        (vndBtcRate * 100000000 * totalBtcNeeded) /
+          parseFloat(this.giftCardValue)
       ) / 100000000;
-
-    const partial = {
-      rate,
-      balance,
+    const giftCardBalance =
+      Math.round(
+        ((remainingBtcInPaxful * parseFloat(this.giftCardValue) * 100000000) /
+          (totalBtcNeeded * 100000000)) *
+          100000000
+      ) / 100000000;
+    const partialRate = {
+      actualCostRate: vndGcRate,
+      remainingBalance: giftCardBalance,
     };
-    rates.push(partial);
-    remaining = (remaining * 100000000 - balance * 100000000) / 100000000;
-    await Paxful.update(
-      { _id: paxful.id },
+    remainingGc -= giftCardBalance;
+    rates.push(partialRate);
+
+    remainingBtcNeeded =
+      (remainingBtcNeeded * 100000000 - remainingBtcInPaxful * 100000000) /
+      100000000;
+    paxfuls[index] = Paxful.updateOne(
+      { _id: paxful._id },
       {
         $set: {
-          remainingBalance: 0,
+          'remainingBalance.amount': 0,
         },
       }
     );
-    // paxful.remainingBalance = 0;
-    // await paxful.save();
-    index++;
+    index += 1;
   }
-  paxful = paxfuls[index];
-  const balance = parseFloat(paxful.remainingBalance);
-  const moneySpent = parseFloat(paxful.moneySpent.amount);
-  const bitcoinSpent = parseFloat(paxful.btcAmount);
-  // const rate = (cost * total) / (bitcoinSpent * parseFloat(this.giftCardValue));
-  const rate =
-    Math.round(
-      (moneySpent * total * 100000000) /
-        (bitcoinSpent * parseFloat(this.giftCardValue))
-    ) / 100000000;
-  const partial = {
-    rate,
-    balance,
-  };
-  rates.push(partial);
 
-  // remaining for paxful
-  remaining = (balance * 100000000 - remaining * 100000000) / 100000000;
-  await Paxful.update(
-    { _id: paxful.id },
+  const paxful = paxfuls[index];
+  const vndBtcRate = parseFloat(paxful.remainingBalance.rating);
+  const vndGcRate =
+    Math.round(
+      ((vndBtcRate * remainingBtcNeeded * 10000000000000000) /
+        (remainingGc * 10000000000000000)) *
+        100000000
+    ) / 100000000;
+  const parialRate = {
+    actualCostRate: vndGcRate,
+    remainingBalance: remainingGc,
+  };
+
+  rates.push(parialRate);
+
+  const remainingBtcInPaxful =
+    Math.round(
+      parseFloat(paxful.remainingBalance.amount) * 100000000 -
+        remainingBtcNeeded * 100000000
+    ) / 100000000;
+
+  paxfuls[index] = Paxful.updateOne(
+    { _id: paxful._id },
     {
       $set: {
-        remainingBalance: remaining,
+        'remainingBalance.amount': remainingBtcInPaxful,
       },
     }
   );
+
+  console.log(paxfuls);
+  console.log(paxfuls.length);
+  console.log(rates);
+  console.log(remainingBtcInPaxful);
+
+  this.partialBalance = rates;
+  await Promise.all(paxfuls);
+
+  // let remaining = parseFloat(this.priceInBTC);
+  // const total = parseFloat(this.priceInBTC);
+  // let index = 0;
+  // let paxful;
+
+  // const rates = [];
+
+  // // const paxfuls = await query;
+
+  // while (remaining > parseFloat(paxfuls[index].remainingBalance)) {
+  //   paxful = paxfuls[index];
+  //   const balance = parseFloat(paxful.remainingBalance);
+  //   const moneySpent = parseFloat(paxful.moneySpent.amount);
+  //   // const bitcoinSpent = parseFloat(paxful.btcAmount);
+  //   const rate =
+  //     Math.round(
+  //       (moneySpent * total * 100000000) /
+  //         (balance * parseFloat(this.giftCardValue))
+  //     ) / 100000000;
+
+  //   const partial = {
+  //     rate,
+  //     balance,
+  //   };
+  //   rates.push(partial);
+  //   remaining = (remaining * 100000000 - balance * 100000000) / 100000000;
+  //   paxfuls[index] = Paxful.update(
+  //     { _id: paxful._id },
+  //     {
+  //       $set: {
+  //         remainingBalance: 0,
+  //       },
+  //     }
+  //   );
+  //   // paxful.remainingBalance = 0;
+  //   // await paxful.save();
+  //   index++;
+  // }
+  // paxful = paxfuls[index];
+  // const balance = parseFloat(paxful.remainingBalance);
+  // const moneySpent = parseFloat(paxful.moneySpent.amount);
+  // // const bitcoinSpent = parseFloat(paxful.btcAmount);
+  // // // const rate = (cost * total) / (bitcoinSpent * parseFloat(this.giftCardValue));
+  // const rate =
+  //   Math.round(
+  //     (moneySpent * total * 100000000) /
+  //       (balance * parseFloat(this.giftCardValue))
+  //   ) / 100000000;
+  // const partial = {
+  //   rate,
+  //   balance,
+  // };
+  // rates.push(partial);
+
+  // // remaining for paxful
+  // remaining = (balance * 100000000 - remaining * 100000000) / 100000000;
+  // paxfuls[index] = Paxful.update(
+  //   { _id: paxful._id },
+  //   {
+  //     $set: {
+  //       remainingBalance: remaining,
+  //     },
+  //   }
+  // );
+
+  // await Promise.all(paxfuls);
+
+  /////////////////*************** */
+
   // paxful.remainingBalance = remaining;
   // await paxful.save();
   // while (remaining > new Decimal(parseFloat(paxfuls[index].remainingBalance))) {
@@ -157,9 +270,9 @@ giftCardSchema.pre('save', async function (next) {
   // rates.push(partial);
   // remaining -= balance;
 
-  console.log(paxful);
-  console.log(parseFloat(remaining));
-  console.log(rates);
+  // console.log(paxful);
+  // console.log(parseFloat(remaining));
+  // console.log(rates);
 
   next();
 });

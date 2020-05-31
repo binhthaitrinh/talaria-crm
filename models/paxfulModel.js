@@ -40,14 +40,30 @@ const paxfulSchema = mongoose.Schema({
     },
   },
   remainingBalance: {
-    type: mongoose.Decimal128,
+    amount: {
+      type: mongoose.Decimal128,
+    },
+    rating: {
+      type: mongoose.Decimal128,
+    },
   },
 });
 
 paxfulSchema.pre('save', function (next) {
   console.log('saving...');
   console.log(this);
-  this.remainingBalance = parseFloat(this.btcAmount);
+  this.remainingBalance.amount = parseFloat(this.btcAmount);
+
+  if (parseFloat(this.remainingBalance.amount) !== 0) {
+    this.remainingBalance.rating =
+      Math.round(
+        ((parseFloat(this.moneySpent.amount) * 100000000) /
+          (parseFloat(this.btcAmount) * 100000000)) *
+          100000000
+      ) / 100000000;
+  } else {
+    this.remainingBalance.rating = null;
+  }
 
   next();
 });

@@ -9,6 +9,7 @@ const paxfulRouter = require('./routes/paxfulRoutes');
 const giftCardRouter = require('./routes/giftCardRoutes');
 const customerRouter = require('./routes/customerRoutes');
 const affiliateRouter = require('./routes/affiliateRoutes');
+const billRouter = require('./routes/billRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -31,6 +32,7 @@ app.use('/api/v1/paxfuls', paxfulRouter);
 app.use('/api/v1/giftcards', giftCardRouter);
 app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/affiliates', affiliateRouter);
+app.use('/api/v1/bills', billRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

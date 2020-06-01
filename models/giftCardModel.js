@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Paxful = require('../models/paxfulModel');
-const Decimal = require('decimal.js');
+const AppError = require('../utils/appError');
 
 const giftCardSchema = mongoose.Schema({
   giftCardType: {
@@ -80,16 +80,21 @@ giftCardSchema.pre('save', async function (next) {
     },
   ]);
 
+  if (paxfuls.length === 0) {
+    return next(new AppError('not enough BTC', 400));
+  }
+
+  console.log(paxfuls);
+
   let remainingBtcNeeded = parseFloat(this.priceInBTC);
   let remainingGc = parseFloat(this.giftCardValue);
   const totalBtcNeeded = remainingBtcNeeded;
   const rates = [];
   let index = 0;
 
-  console.log(paxfuls.length);
-
   // Keep taking BTC ufrom paxful transaction
   while (
+    index < paxfuls.length &&
     remainingBtcNeeded > parseFloat(paxfuls[index].remainingBalance.amount)
   ) {
     const paxful = paxfuls[index];
@@ -125,6 +130,10 @@ giftCardSchema.pre('save', async function (next) {
       }
     );
     index += 1;
+  }
+
+  if (index >= paxfuls.length) {
+    return next(new AppError('not enought BTC', 400));
   }
 
   const paxful = paxfuls[index];

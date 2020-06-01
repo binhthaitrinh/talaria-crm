@@ -48,7 +48,7 @@ const items = [
     orderAccount: '5ecef412c697ac79087b4cfb',
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -76,7 +76,7 @@ const items = [
     orderAccount: '5ecef412c697ac79087b4cfb',
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -106,7 +106,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -136,7 +136,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -166,7 +166,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -196,7 +196,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -226,7 +226,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -256,7 +256,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -286,7 +286,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -317,7 +317,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -347,7 +347,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -377,7 +377,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -407,7 +407,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -437,7 +437,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -466,7 +466,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -496,7 +496,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -526,7 +526,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -555,7 +555,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -585,7 +585,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -615,7 +615,7 @@ const items = [
 
     shippingToVNFee: 0.0,
     usVnRate: 23000,
-    costOfGoodsSold: 1.0,
+    actualCost: 1.0,
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,

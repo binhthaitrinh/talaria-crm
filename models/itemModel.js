@@ -3,6 +3,7 @@ const validator = require('validator');
 const Transaction = require('./transactionModel');
 const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');
+const Account = require('./accountModel');
 
 const itemSchema = mongoose.Schema({
   link: {
@@ -54,7 +55,7 @@ const itemSchema = mongoose.Schema({
     type: Number,
     default: 23000,
   },
-  costOfGoodsSold: {
+  actualCost: {
     type: mongoose.Decimal128,
     default: 0.7,
   },
@@ -101,33 +102,16 @@ const itemSchema = mongoose.Schema({
   },
 });
 
+itemSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'orderAccount',
+    select: 'balance',
+  });
+
+  next();
+});
+
 itemSchema.statics.createTransaction = async function (id) {
-  console.log('hello');
-  // const { tax, usShippingFee, quantity, pricePerItem } = this;
-
-  // const totalCost =
-  //   pricePerItem * quantity * (1 + parseFloat(tax)) + usShippingFee;
-
-  // console.log(totalCost);
-
-  // let transaction = await Transaction.findOne({ itemID: this.id });
-
-  // if (transaction) {
-  //   transaction = await Transaction.findByIdAndUpdate(transaction.id, {
-  //     transactionType: 'outflow',
-  //     amount: totalCost,
-  //     accountID: this.orderAccount,
-  //     itemID: this.id,
-  //   });
-  // } else {
-  //   transaction = await Transaction.create({
-  //     transactionType: 'outflow',
-  //     amount: totalCost,
-  //     accountID: this.orderAccount,
-  //     itemID: this.id,
-  //   });
-  // }
-
   const item = await this.aggregate([
     {
       $match: { _id: mongoose.Types.ObjectId(id) },
@@ -146,7 +130,19 @@ itemSchema.statics.createTransaction = async function (id) {
         },
       },
     },
+    {
+      $lookup: {
+        from: 'accounts',
+        localField: 'orderAccount',
+        foreignField: '_id',
+        as: 'orderAccountInfo',
+      },
+    },
   ]);
+
+  if (item[0].total > item[0].orderAccountInfo[0].balance) {
+    return new AppError('Not enought balance in account', 400);
+  }
 
   const transaction = await Transaction.findOneAndUpdate(
     { itemID: id },
@@ -157,6 +153,23 @@ itemSchema.statics.createTransaction = async function (id) {
       itemID: item[0]._id,
     },
     { upsert: true, returnNewDocument: true, returnOriginal: false }
+  );
+
+  const acctRemaining =
+    Math.round(
+      item[0].orderAccountInfo[0].balance * 100000000 -
+        item[0].total * 100000000
+    ) / 100000000;
+
+  await Account.updateOne(
+    {
+      _id: item[0].orderAccount,
+    },
+    {
+      $set: {
+        balance: acctRemaining,
+      },
+    }
   );
 
   // get gift cards remaining partial balance && rate,
@@ -324,7 +337,10 @@ itemSchema.statics.createTransaction = async function (id) {
       },
       {
         $set: {
-          costOfGoodsSold: actualCost,
+          actualCost,
+        },
+        $set: {
+          status: 'ordered',
         },
       }
     )
@@ -351,7 +367,8 @@ itemSchema.statics.createTransaction = async function (id) {
         $set: {
           remainingBalance: remainingGcBalance,
         },
-      }
+      },
+      {}
     )
   );
 

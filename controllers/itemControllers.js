@@ -28,6 +28,10 @@ exports.createItem = catchAsync(async (req, res, next) => {
 exports.chargeMoney = catchAsync(async (req, res, next) => {
   const transaction = await Item.createTransaction(req.params.id);
 
+  if (transaction.statusCode && transaction.statusCode === 400) {
+    return next(transaction);
+  }
+
   res.status(200).json({
     status: 'success',
     data: {

@@ -182,6 +182,10 @@ itemSchema.statics.createTransaction = async function (id) {
   console.log(giftcards);
   console.log(giftcards[0].partialBalance[0]);
 
+  const giftCardsIdx = giftcards.map((gc) => gc._id);
+
+  console.log(giftCardsIdx);
+
   let remaining = parseFloat(item[0].total);
   let actualCost = 0;
   let index = 0;
@@ -225,8 +229,39 @@ itemSchema.statics.createTransaction = async function (id) {
         remaining * 100000000 -
           giftcards[index].partialBalance[j].remainingBalance * 100000000
       ) / 100000000;
+
     j++;
   }
+
+  let giftCardPromises = [];
+  let idx = 0;
+
+  for (let k = 0; k < j; k++) {
+    giftCardPromises[idx] = GiftCard.updateOne(
+      {
+        _id: giftCardsIdx[0],
+      },
+      {
+        $set: {
+          [`partialBalance.${k}.remainingBalance`]: 0,
+        },
+      }
+    );
+    idx++;
+  }
+
+  await Promise.all(giftCardPromises);
+
+  // giftcards[index] = await GiftCard.updateOne(
+  //   {
+  //     _id: giftCardsIdx[0],
+  //   },
+  //   {
+  //     $set: {
+  //       'partialBalance.0.remainingBalance': 0,
+  //     },
+  //   }
+  // );
 
   actualCost =
     Math.round(
@@ -237,6 +272,86 @@ itemSchema.statics.createTransaction = async function (id) {
         100000000 +
         actualCost * 100000000
     ) / 100000000;
+  console.log(j);
+
+  // for (let i = 0; i < index; i++) {
+  //   for (let k = 0; k < j; k++) {
+  //     giftcards[i] = GiftCard.updateOne(
+  //       {
+  //         _id: giftcards[i]._id,
+  //       },
+  //       {
+  //         $set: { 'partialBalance.$[elem].remainingBalance': 0.0 },
+  //       },
+  //       {
+  //         arrayFilters: [
+  //           { 'elem._id': { $eq: giftcards[i].partialBalance[k]._id } },
+  //         ],
+  //       }
+  //     );
+  //   }
+  // }
+
+  // giftcards[0] = GiftCard.updateOne(
+  //   {
+  //     _id: giftcards[0]._id,
+  //   },
+  //   {
+  //     $set: { 'partialBalance.$[elem].remainingBalance': 0.0 },
+  //   },
+  //   {
+  //     arrayFilters: [
+  //       { 'elem._id': { $eq: giftcards[0].partialBalance[0]._id } },
+  //     ],
+  //   }
+  // );
+
+  console.log(giftcards);
+
+  // giftcards[index] = GiftCard.updateOne(
+  //   {
+  //     _id: giftcards[index]._id,
+  //   },
+  //   {
+  //     $set: { 'partialBalance.$[elem].remainingBalance': 5000 },
+  //   },
+  //   {
+  //     arrayFilters: [
+  //       { 'elem._id': { $eq: giftcards[index].partialBalance[j]._id } },
+  //     ],
+  //   }
+  // );
+
+  // giftcards[0].partialBalance[0].remainingBalance = 0;
+
+  // const abc = giftcards[0];
+  // console.log(abc);
+
+  // CORRECT IMPLEMENTATION
+  // const result = await GiftCard.update(
+  //   {
+  //     _id: giftcards[0]._id,
+  //   },
+  //   {
+  //     $set: {
+  //       'partialBalance.0.remainingBalance': 0,
+  //     },
+  //   }
+  // );
+  // {
+  //   $unwind: '$partialBalance',
+  // },
+  // {
+  //   $project: {
+  //     partialBalance: 1,
+  //   },
+  // },
+
+  // console.log('//////////////////////////////////////');
+  // console.log(result);
+  // console.log('//////////////////////////////////////');
+
+  // await abc.save();
 
   console.log(actualCost);
 

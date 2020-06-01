@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const customerSchema = mongoose.Schema({
+  customerName: {
+    type: String,
+    required: [true, 'A customer must have a name'],
+  },
   customerType: {
     type: String,
     enum: ['personal', 'wholesale'],
@@ -18,7 +22,10 @@ const customerSchema = mongoose.Schema({
     },
   ],
   phoneNumber: String,
-  discountRate: mongoose.Decimal128,
+  discountRate: {
+    type: mongoose.Decimal128,
+    default: 0,
+  },
   notes: String,
   bankAccounts: [
     {

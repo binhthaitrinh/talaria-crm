@@ -46,9 +46,8 @@ const items = [
     orderedWebsite: orderWebsites[0],
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -74,9 +73,8 @@ const items = [
     orderedWebsite: orderWebsites[0],
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -104,9 +102,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -134,9 +131,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -164,9 +160,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -194,9 +189,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -224,9 +218,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -254,9 +247,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -284,9 +276,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -315,9 +306,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -345,9 +335,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -375,9 +364,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -405,9 +393,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -435,9 +422,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -464,9 +450,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -494,9 +479,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -524,9 +508,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -553,9 +536,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -583,9 +565,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,
@@ -613,9 +594,8 @@ const items = [
     invoiceLink: '',
     orderAccount: '5ecef412c697ac79087b4cfb',
 
-    shippingToVNFee: 0.0,
-    usVnRate: 23000,
-    actualCost: 1.0,
+    shippingToVNFee: 10.0,
+
     orderedDate: new Date('May 26, 2020 03:24:00'),
     arrivedAtWarehouseDate: null,
     shippingToVnDate: null,

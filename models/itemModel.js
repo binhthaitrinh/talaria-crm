@@ -5,101 +5,163 @@ const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');
 const Account = require('./accountModel');
 
-const itemSchema = mongoose.Schema({
-  link: {
-    type: String,
-    required: [true, 'An Item must have a link'],
+const itemSchema = mongoose.Schema(
+  {
+    link: {
+      type: String,
+      required: [true, 'An Item must have a link'],
+    },
+    name: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: [
+        'not-yet-ordered',
+        'ordered',
+        'on-the-way-to-warehouse',
+        'on-the-way-to-viet-nam',
+        'arrived-at-viet-nam',
+        'done',
+        'returning',
+        'returned',
+      ],
+      default: 'not-yet-ordered',
+    },
+    pricePerItem: {
+      type: Number,
+      required: [true, 'An Item must have a price'],
+    },
+    tax: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    usShippingFee: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    shippingToVNFee: {
+      type: mongoose.Decimal128,
+      default: 10.0,
+    },
+    estimatedWeight: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    actualWeight: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    // usVnRate: {
+    //   type: Number,
+    //   default: 23000,
+    // },
+
+    // actual gc cost, exclude shipping to VN fee
+    actualCost: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    quantity: {
+      type: Number,
+      default: 1,
+    },
+    trackingLink: String,
+    orderedWebsite: {
+      type: String,
+      enum: ['amazon', 'ebay', 'sephora', 'bestbuy', 'costco', 'walmart'],
+      default: 'amazon',
+    },
+    invoiceLink: String,
+    orderAccount: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Account',
+    },
+    orderedDate: {
+      type: Date,
+      default: Date.now(),
+    },
+    arrivedAtWarehouseDate: {
+      type: Date,
+    },
+    shippingToVnDate: {
+      type: Date,
+    },
+    arrivedAtVnDate: {
+      type: Date,
+    },
+    customerRcvedDate: {
+      type: Date,
+    },
+    returnPkgArvlDate: {
+      type: Date,
+    },
+    itemType: {
+      type: String,
+      enum: ['toys', 'electronics', 'cosmetics', 'accessories', 'others'],
+    },
+    notes: {
+      type: String,
+    },
+    // costForCustomer: {
+    //   type: mongoose.Decimal128,
+    //   // default: function () {
+    //   //   return (
+    //   //     Math.round(
+    //   //       this.pricePerItem *
+    //   //         100 *
+    //   //         this.quantity *
+    //   //         Math.round(this.tax * 1000 + 1000)
+    //   //     ) /
+    //   //       100000 +
+    //   //     Math.round(this.usShippingFee * 100000) / 100000 +
+    //   //     Math.round(this.estimatedWeight * this.shippingToVNFee * 100000) /
+    //   //       100000
+    //   //   );
+    //   // },
+    // },
   },
-  name: {
-    type: String,
-  },
-  status: {
-    type: String,
-    enum: [
-      'not-yet-ordered',
-      'ordered',
-      'on-the-way-to-warehouse',
-      'on-the-way-to-viet-nam',
-      'arrived-at-viet-nam',
-      'done',
-      'returning',
-      'returned',
-    ],
-    default: 'not-yet-ordered',
-  },
-  pricePerItem: {
-    type: Number,
-    required: [true, 'An Item must have a price'],
-  },
-  tax: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-  },
-  usShippingFee: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-  },
-  shippingToVNFee: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-  },
-  estimatedWeight: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-  },
-  actualWeight: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-  },
-  usVnRate: {
-    type: Number,
-    default: 23000,
-  },
-  actualCost: {
-    type: mongoose.Decimal128,
-    default: 0.7,
-  },
-  quantity: {
-    type: Number,
-    default: 1,
-  },
-  trackingLink: String,
-  orderedWebsite: {
-    type: String,
-    enum: ['amazon', 'ebay', 'sephora', 'bestbuy', 'costco', 'walmart'],
-    default: 'amazon',
-  },
-  invoiceLink: String,
-  orderAccount: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Account',
-  },
-  orderedDate: {
-    type: Date,
-    default: Date.now(),
-  },
-  arrivedAtWarehouseDate: {
-    type: Date,
-  },
-  shippingToVnDate: {
-    type: Date,
-  },
-  arrivedAtVnDate: {
-    type: Date,
-  },
-  customerRcvedDate: {
-    type: Date,
-  },
-  returnPkgArvlDate: {
-    type: Date,
-  },
-  itemType: {
-    type: String,
-    enum: ['toys', 'electronics', 'cosmetics', 'accessories', 'others'],
-  },
-  notes: {
-    type: String,
-  },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+// itemSchema.pre('save', function (next) {
+//   // if (
+//   //   this.isModified('tax') ||
+//   //   this.isModified('usShippingFee') ||
+//   //   this.isModified('shippingToVNFee') ||
+//   //   this.isModified('quantity') ||
+//   //   this.isModified('pricePerItem') ||
+//   //   this.isModified('estimatedWeight')
+//   // ) {
+//   this.costForCustomer =
+//     Math.round(
+//       this.pricePerItem *
+//         100 *
+//         this.quantity *
+//         Math.round(this.tax * 10000 + 10000)
+//     ) /
+//       1000000 +
+//     Math.round(this.usShippingFee * 1000000) / 1000000 +
+//     Math.round(this.estimatedWeight * this.shippingToVNFee * 1000000) / 1000000;
+
+//   next();
+// });
+
+itemSchema.virtual('totalCostForCustomer').get(function () {
+  return (
+    Math.round(
+      this.pricePerItem *
+        100 *
+        this.quantity *
+        Math.round(this.tax * 10000 + 10000)
+    ) /
+      1000000 +
+    Math.round(this.usShippingFee * 1000000) / 1000000 +
+    Math.round(this.estimatedWeight * this.shippingToVNFee * 1000000) / 1000000
+  );
 });
 
 itemSchema.pre(/^find/, function (next) {
@@ -338,8 +400,6 @@ itemSchema.statics.createTransaction = async function (id) {
       {
         $set: {
           actualCost,
-        },
-        $set: {
           status: 'ordered',
         },
       }
@@ -371,6 +431,16 @@ itemSchema.statics.createTransaction = async function (id) {
       {}
     )
   );
+
+  // giftCardPromises.push(
+  //   Account.updateOne({
+  //     _id: this.orderAccount.id,
+  //   }, {
+  //     $set: {
+  //       balance =
+  //     }
+  //   })
+  // )
 
   await Promise.all(giftCardPromises);
 

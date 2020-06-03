@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
-const Paxful = require('../models/paxfulModel');
+const Paxful = require('./paxfulModel');
 const AppError = require('../utils/appError');
+const Account = require('./accountModel');
 
 const giftCardSchema = mongoose.Schema({
   giftCardType: {
@@ -172,6 +173,18 @@ giftCardSchema.pre('save', async function (next) {
   console.log(remainingBtcInPaxful);
 
   this.partialBalance = rates;
+
+  const accountBalance = await Account.findById(this.accountID);
+  const newBalance =
+    Math.round(
+      parseFloat(accountBalance.balance) * 100000000 +
+        this.giftCardValue * 100000000
+    ) / 100000000;
+  accountBalance.balance = newBalance;
+
+  await accountBalance.save();
+
+  console.log(accountBalance);
   await Promise.all(paxfuls);
 
   // let remaining = parseFloat(this.priceInBTC);

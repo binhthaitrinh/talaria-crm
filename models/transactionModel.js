@@ -28,9 +28,9 @@ const transactionSchema = mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'Bill',
   },
-  gcCost: mongoose.Schema.ObjectId,
+  gcCost: mongoose.Decimal128,
   notes: String,
-  balance: mongoose.Schema.ObjectId,
+  balance: mongoose.Decimal128,
 });
 
 const transactionModel = mongoose.model('Transaction', transactionSchema);

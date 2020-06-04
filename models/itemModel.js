@@ -219,20 +219,17 @@ itemSchema.statics.createTransaction = async function (id) {
         _id: 1,
         total: 1,
         'orderAccountInfo.balance': 1,
+        'orderAccountInfo._id': 1,
       },
     },
   ]);
+
+  console.log(item[0]);
 
   // throw error if account not have enough balance to charge
   if (item[0].total > item[0].orderAccountInfo.balance) {
     return new AppError('Not enough balance in account', 400);
   }
-
-  // update account balance
-
-  // update item status to "order"
-
-  // create a new outflow transaction
 
   // get giftcard partial balance and rate
   // filter giftcard partial balance that is === 0
@@ -251,16 +248,18 @@ itemSchema.statics.createTransaction = async function (id) {
       $project: {
         // partialBalance: 1,
         remainingBalance: 1,
-        partialBalance: {
-          $filter: {
-            input: '$partialBalance',
-            as: 'balance',
-            cond: { $gt: ['$$balance.remainingBalance', 0] },
-          },
-        },
+        partialBalance: 1,
+        // {
+        //   $filter: {
+        //     input: '$partialBalance',
+        //     as: 'balance',
+        //     cond: { $gt: ['$$balance.remainingBalance', 0] },
+        //   },
+        // },
       },
     },
   ]);
+  console.log(giftcards[0].partialBalance);
 
   if (giftcards.length === 0) {
     return new AppError('Not enough balance', 400);
@@ -316,114 +315,143 @@ itemSchema.statics.createTransaction = async function (id) {
       j += 1;
       currentPartial = giftcards[index].partialBalance[j];
     }
+    giftCardPromises.push(
+      GiftCard.updateOne(
+        {
+          _id: giftcards[index]._id,
+        },
+        {
+          $set: {
+            remainingBalance: 0,
+          },
+        }
+      )
+    );
     index += 1;
   }
 
-  // if (index >= giftcards.length) {
-  //   return new AppError('not enough balance', 400);
-  // }
+  console.log(index);
 
-  // // if new gift card to be charged for the remaining
-  // let j = 0;
+  if (index >= giftcards.length) {
+    return new AppError('not enough balance', 400);
+  }
 
-  // while (
-  //   j < giftcards[index].partialBalance.length &&
-  //   parseFloat(giftcards[index].partialBalance[j].remainingBalance) === 0
-  // ) {
-  //   j += 1;
-  // }
+  // charge the last gift card
+  let j = 0;
 
-  // while (
-  //   j < giftcards[index].partialBalance.length &&
-  //   remaining > parseFloat(giftcards[index].partialBalance[j].remainingBalance)
-  // ) {
-  //   actualCost =
-  //     Math.round(
-  //       (parseFloat(giftcards[index].partialBalance[j].remainingBalance) *
-  //         100000000 *
-  //         (parseFloat(giftcards[index].partialBalance[j].actualCostRate) *
-  //           100000000)) /
-  //         100000000 +
-  //         actualCost * 100000000
-  //     ) / 100000000;
+  let currentPartial = giftcards[index].partialBalance[j];
+  while (
+    j < giftcards[index].partialBalance.length &&
+    remaining > parseFloat(currentPartial.remainingBalance)
+  ) {
+    actualCost =
+      Math.round(
+        actualCost * 100000000 +
+          Math.round(
+            parseFloat(currentPartial.remainingBalance) *
+              100000000 *
+              parseFloat(currentPartial.actualCostRate) *
+              100000000
+          ) /
+            100000000
+      ) / 100000000;
+    remaining =
+      Math.round(
+        remaining * 100000000 - currentPartial.remainingBalance * 100000000
+      ) / 100000000;
+    console.log(parseFloat(currentPartial.remainingBalance));
+    giftcards[index].remainingBalance =
+      Math.round(
+        giftcards[index].remainingBalance * 100000000 -
+          currentPartial.remainingBalance * 100000000
+      ) / 100000000;
+    currentPartial.remainingBalance = 0;
 
-  //   remaining =
-  //     Math.round(
-  //       remaining * 100000000 -
-  //         giftcards[index].partialBalance[j].remainingBalance * 100000000
-  //     ) / 100000000;
-  //   giftcards[index].partialBalance[j].remainingBalance = 0;
+    console.log(actualCost, 2);
 
-  //   giftCardPromises.push(
-  //     GiftCard.updateOne(
-  //       {
-  //         _id: giftcards[index]._id,
-  //       },
-  //       {
-  //         $set: {
-  //           [`partialBalance.${j}.remainingBalance`]: 0,
-  //         },
-  //       }
-  //     )
-  //   );
+    giftCardPromises.push(
+      GiftCard.updateOne(
+        {
+          _id: giftcards[index]._id,
+          // partialBalance: {
+          //   remainingBalance: { $gt: 0 },
+          // },
+        },
+        {
+          $set: {
+            [`partialBalance.${j}.remainingBalance`]: 0,
+          },
+        }
+      )
+    );
 
-  //   j += 1;
-  // }
+    j += 1;
+    currentPartial = giftcards[index].partialBalance[j];
+  }
 
-  // if (
-  //   index >= giftcards.length ||
-  //   j >= giftcards[index].partialBalance.length ||
-  //   remaining > parseFloat(giftcards[index].partialBalance[j].remainingBalance)
-  // ) {
-  //   return new AppError('not enough balance', 400);
-  // }
-  // // Last partial balance of a single gift card
-  // actualCost =
-  //   Math.round(
-  //     (remaining *
-  //       100000000 *
-  //       (parseFloat(giftcards[index].partialBalance[j].actualCostRate) *
-  //         100000000)) /
-  //       100000000 +
-  //       actualCost * 100000000
-  //   ) / 100000000;
+  // if no partial left to charge money
+  if (
+    index >= giftcards.length ||
+    j >= giftcards[index].partialBalance.length ||
+    remaining > parseFloat(giftcards[index].partialBalance[j].remainingBalance)
+  ) {
+    return new AppError('not enough balance', 400);
+  }
 
-  // // calculate the remaining partial Balance, save into gift card
-  // const remainingPartialBalance =
-  //   Math.round(
-  //     parseFloat(giftcards[index].partialBalance[j].remainingBalance) *
-  //       100000000 -
-  //       remaining * 100000000
-  //   ) / 100000000;
+  // Last partial balance of a last gift card
+  actualCost =
+    Math.round(
+      (remaining *
+        100000000 *
+        (parseFloat(giftcards[index].partialBalance[j].actualCostRate) *
+          100000000)) /
+        100000000 +
+        actualCost * 100000000
+    ) / 100000000;
 
-  // giftcards[index].partialBalance[j].remainingBalance = remainingPartialBalance;
+  // calculate the remaining partial Balance, save into gift card
+  const remainingPartialBalance =
+    Math.round(
+      parseFloat(giftcards[index].partialBalance[j].remainingBalance) *
+        100000000 -
+        remaining * 100000000
+    ) / 100000000;
 
-  // giftCardPromises.push(
-  //   GiftCard.updateOne(
-  //     {
-  //       _id: giftcards[index]._id,
-  //     },
-  //     {
-  //       $set: {
-  //         [`partialBalance.${j}.remainingBalance`]: remainingPartialBalance,
-  //       },
-  //     }
-  //   )
-  // );
+  giftcards[index].remainingBalance =
+    Math.round(
+      giftcards[index].remainingBalance * 100000000 - remaining * 100000000
+    ) / 100000000;
 
-  // giftCardPromises.push(
-  //   this.updateOne(
-  //     {
-  //       _id: mongoose.Types.ObjectId(id),
-  //     },
-  //     {
-  //       $set: {
-  //         actualCost,
-  //         status: 'ordered',
-  //       },
-  //     }
-  //   )
-  // );
+  // update last partial of last gift card
+  giftcards[index].partialBalance[j].remainingBalance = remainingPartialBalance;
+
+  giftCardPromises.push(
+    GiftCard.updateOne(
+      {
+        _id: giftcards[index]._id,
+      },
+      {
+        $set: {
+          [`partialBalance.${j}.remainingBalance`]: remainingPartialBalance,
+        },
+      }
+    )
+  );
+
+  // update actual cost & status for the current item
+  giftCardPromises.push(
+    this.updateOne(
+      {
+        _id: mongoose.Types.ObjectId(id),
+      },
+      {
+        $set: {
+          actualCost,
+          status: 'ordered',
+        },
+      }
+    )
+  );
 
   // let remainingGcBalance = 0;
   // for (let k = 0; k < giftcards[index].partialBalance.length; k++) {
@@ -435,30 +463,64 @@ itemSchema.statics.createTransaction = async function (id) {
   //     ) / 100000000;
   // }
 
-  // giftCardPromises.push(
-  //   GiftCard.updateOne(
-  //     {
-  //       _id: giftcards[index]._id,
-  //     },
-  //     {
-  //       $set: {
-  //         remainingBalance: remainingGcBalance,
-  //       },
-  //     }
-  //   )
-  // );
+  console.log(giftcards[index].remainingBalance);
 
-  // // giftCardPromises.push(
-  // //   Account.updateOne({
-  // //     _id: this.orderAccount.id,
-  // //   }, {
-  // //     $set: {
-  // //       balance =
-  // //     }
-  // //   })
-  // // )
+  giftCardPromises.push(
+    GiftCard.updateOne(
+      {
+        _id: giftcards[index]._id,
+      },
+      {
+        $set: {
+          remainingBalance: giftcards[index].remainingBalance,
+        },
+      }
+    )
+  );
 
-  // await Promise.all(giftCardPromises);
+  // update account balance
+  console.log(item[0].total);
+  console.log(parseFloat(item[0].orderAccountInfo.balance), 9999);
+  console.log(
+    Math.round(
+      parseFloat(item[0].orderAccountInfo.balance) * 100000000 -
+        parseFloat(item[0].total) * 100000000
+    ) / 100000000,
+    8888
+  );
+  console.log(item[0].orderAccount);
+  giftCardPromises.push(
+    Account.updateOne(
+      {
+        _id: item[0].orderAccountInfo._id,
+      },
+      {
+        $set: {
+          balance:
+            Math.round(
+              parseFloat(item[0].orderAccountInfo.balance) * 100000000 -
+                parseFloat(item[0].total) * 100000000
+            ) / 100000000,
+        },
+      }
+    )
+  );
+
+  // create a new outflow transaction TODO
+
+  const transaction = await Transaction.findOneAndUpdate(
+    { itemID: id },
+    {
+      transactionType: 'outflow',
+      amount: actualCost,
+      accountID: item[0].orderAccountInfo._id,
+      itemID: item[0]._id,
+      gcCost: parseFloat(item[0].total),
+    },
+    { upsert: true, returnNewDocument: true, returnOriginal: false }
+  );
+
+  await Promise.all(giftCardPromises);
 
   //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -703,8 +765,7 @@ itemSchema.statics.createTransaction = async function (id) {
 
   // await Promise.all(giftCardPromises);
 
-  // return transaction;
-  return 1;
+  return transaction;
 };
 
 const Item = mongoose.model('Item', itemSchema);

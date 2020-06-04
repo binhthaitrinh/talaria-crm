@@ -21,7 +21,10 @@ const billSchema = mongoose.Schema({
   vndUsdRate: mongoose.Decimal128,
   estimatedWeight: mongoose.Decimal128,
   actualWeight: mongoose.Decimal128,
-  moneyReceived: mongoose.Decimal128,
+  moneyReceived: {
+    type: mongoose.Decimal128,
+    default: 0,
+  },
   shippingFeeInUSD: mongoose.Decimal128,
   shippingFeeInVND: mongoose.Decimal128,
   status: {
@@ -66,13 +69,13 @@ billSchema.pre('save', async function (next) {
   this.items.forEach((item) => items.push(Item.findById(item)));
 
   const results = await Promise.all(items);
-  console.log(results[0][0]);
+  console.log(results[0]);
 
   let estimatedWeight = 0;
   let actualWeight = 0;
   let actualCost = 0;
-
   let gcCost = 0;
+
   results.forEach((item) => {
     estimatedWeight =
       Math.round(
@@ -91,40 +94,33 @@ billSchema.pre('save', async function (next) {
           )
       ) / 100000000;
     gcCost =
-      Math.round(
-        gcCost * 100000000 +
-          parseFloat(item.totalCostForCustomer) * 100000000 +
-          Math.round(
-            parseFloat(item.estimatedWeight) *
-              100000000 *
-              parseFloat(item.shippingToVNFee) *
-              100000000
-          ) /
-            100000000
-        // item.quantity *
-        //   (item.pricePerItem * 100000000) *
-        //   Math.round(1 * 100000000 + item.tax * 100000000)) /
-        // 100000000 +
-        // item.usShippingFee * 100000000 +
-        // Math.round(100000000 * item.estimatedWeight * item.shippingToVNFee)
-      ) / 100000000;
+      Math.round(gcCost * 100000000 + item.totalCostForCustomer * 100000000) /
+      100000000;
+    // Math.round(
+    //   gcCost * 100000000 +
+    //     parseFloat(item.totalCostForCustomer) * 100000000 +
+    //     Math.round(
+    //       parseFloat(item.estimatedWeight) *
+    //         100000000 *
+    //         parseFloat(item.shippingToVNFee) *
+    //         100000000
+    //     ) /
+    //       100000000
+    //   // item.quantity *
+    //   //   (item.pricePerItem * 100000000) *
+    //   //   Math.round(1 * 100000000 + item.tax * 100000000)) /
+    //   // 100000000 +
+    //   // item.usShippingFee * 100000000 +
+    //   // Math.round(100000000 * item.estimatedWeight * item.shippingToVNFee)
+    // ) / 100000000;
   });
-  // totalGcCost =
-  //   Math.round(
-  //     gcCost * 100000000 +
-  //       Math.round(
-  //         estimatedWeight * 100000000 * (this.shippingFeeInUSD * 100000000)
-  //       ) /
-  //         100000000
-  //   ) / 100000000;
 
-  console.log(gcCost);
   this.totalGcCost = gcCost;
   this.estimatedWeight = estimatedWeight;
   this.actualWeight = actualWeight;
   this.totalGcCostInVnd =
     Math.round(parseFloat(this.vndUsdRate) * gcCost * 100000000) / 100000000;
-  console.log(actualCost);
+
   this.actualCost = actualCost;
   this.profit =
     Math.round(

@@ -22,9 +22,15 @@ const transactionSchema = mongoose.Schema({
   itemID: {
     type: mongoose.Schema.ObjectId,
     ref: 'Item',
-    unique: true,
     // required: [true, 'Transaction must be associated with an item'],
   },
+  billID: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Bill',
+  },
+  gcCost: mongoose.Schema.ObjectId,
+  notes: String,
+  balance: mongoose.Schema.ObjectId,
 });
 
 const transactionModel = mongoose.model('Transaction', transactionSchema);

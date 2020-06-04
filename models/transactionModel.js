@@ -33,6 +33,33 @@ const transactionSchema = mongoose.Schema({
   balance: mongoose.Decimal128,
 });
 
+transactionSchema.statics.getStats = async function () {
+  const totalTransactionAmount = await this.aggregate([
+    {
+      $group: {
+        _id: '$transactionType',
+        count: { $sum: 1 },
+        totalMoneySpent: { $sum: '$amount' },
+      },
+    },
+  ]);
+
+  const amountReceived =
+    totalTransactionAmount[0]._id === 'inflow'
+      ? parseFloat(totalTransactionAmount[0].totalMoneySpent)
+      : parseFloat(totalTransactionAmount[1].totalMoneySpent);
+
+  const amountSpent =
+    totalTransactionAmount[0]._id === 'outflow'
+      ? parseFloat(totalTransactionAmount[0].totalMoneySpent)
+      : parseFloat(totalTransactionAmount[1].totalMoneySpent);
+
+  return {
+    amountReceived,
+    amountSpent,
+  };
+};
+
 const transactionModel = mongoose.model('Transaction', transactionSchema);
 
 module.exports = transactionModel;

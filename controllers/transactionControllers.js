@@ -25,3 +25,14 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.getStats = catchAsync(async (req, res, next) => {
+  const data = await Transaction.getStats();
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data,
+    },
+  });
+});

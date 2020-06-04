@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 const Item = require('./itemModel');
+const Transaction = require('./transactionModel');
 
 const billSchema = mongoose.Schema({
   date: {
@@ -18,11 +19,10 @@ const billSchema = mongoose.Schema({
     },
   ],
   totalBillInUsd: mongoose.Decimal128,
-  totalBillInVnd: mongoose.Decimal128,
   vndUsdRate: mongoose.Decimal128,
   status: {
     type: String,
-    enum: ['not-paid', 'partially-paid', 'fullypaid'],
+    enum: ['not-paid', 'partially-paid', 'fully-paid'],
     default: 'not-paid',
   },
   estimatedWeight: mongoose.Decimal128,
@@ -31,20 +31,22 @@ const billSchema = mongoose.Schema({
     default: 0,
   },
   remaining: mongoose.Decimal128,
-  moneyChargeCustomer: mongoose.Decimal128,
-  shippingFeeToVnInUSD: {
+  moneyChargeCustomerUSD: mongoose.Decimal128,
+  moneyChargeCustomerVND: mongoose.Decimal128,
+  shippingRateToVnInUSD: {
     type: mongoose.Decimal128,
     default: 12.5,
   },
-  shippingFeeInVND: {
+  shippingRateToVnInVND: {
     type: mongoose.Decimal128,
     default: function () {
       return (
-        Math.round(this.shippingFeeToVnInUSD * 100 + this.vndUsdRate * 100) /
+        Math.round(this.shippingRateToVnInUSD * 100 + this.vndUsdRate * 100) /
         100
       );
     },
   },
+  shippingFeeToVnInUSD: mongoose.Decimal128,
   moneyTransferReceipt: String,
   customer: {
     type: mongoose.Schema.ObjectId,
@@ -86,7 +88,7 @@ billSchema.pre('save', async function (next) {
         totalEstimatedWeight: {
           $sum: '$estimatedWeight',
         },
-        moneyChargeCustomer: {
+        moneyChargeCustomerUSD: {
           $sum: {
             $add: [
               '$usShippingFee',
@@ -95,7 +97,7 @@ billSchema.pre('save', async function (next) {
               },
               {
                 $multiply: [
-                  '$tax',
+                  '$taxForCustomer',
                   {
                     $add: [
                       '$usShippingFee',
@@ -106,16 +108,22 @@ billSchema.pre('save', async function (next) {
                   },
                 ],
               },
-              // {
-              //   $multiply: [
-              //     '$pricePerItem',
-              //     '$quantity',
-              //     0.82,
-              //     {
-              //       $add: [1, '$taxForCustomer'],
-              //     },
-              //   ],
-              // },
+            ],
+          },
+        },
+        totalBillCost: {
+          $sum: {
+            $add: [
+              '$usShippingFee',
+              {
+                $multiply: [
+                  '$pricePerItem',
+                  '$quantity',
+                  {
+                    $add: [1, '$taxForCustomer'],
+                  },
+                ],
+              },
             ],
           },
         },
@@ -124,15 +132,63 @@ billSchema.pre('save', async function (next) {
   ]);
 
   this.estimatedWeight = result[0].totalEstimatedWeight;
-  this.moneyChargeCustomer =
+  this.shippingFeeToVnInUSD =
     Math.round(
-      parseFloat(this.estimatedWeight) *
-        100000000 *
-        parseFloat(this.shippingFeeToVnInUSD) +
-        parseFloat(result[0].moneyChargeCustomer) * 100000000
+      parseFloat(this.estimatedWeight) * 100 * 10 * this.shippingRateToVnInUSD
+    ) / 1000;
+  this.moneyChargeCustomerUSD =
+    Math.round(
+      this.shippingFeeToVnInUSD * 100000000 +
+        parseFloat(result[0].moneyChargeCustomerUSD) * 100000000
     ) / 100000000;
+  this.totalBillInUsd =
+    Math.round(
+      this.shippingFeeToVnInUSD * 100000000 +
+        parseFloat(result[0].totalBillCost) * 100000000
+    ) / 100000000;
+
+  this.moneyChargeCustomerVND =
+    Math.round(this.vndUsdRate * (100000000 * this.moneyChargeCustomerUSD)) /
+    100000000;
+
+  this.remaining = this.moneyChargeCustomerVND;
+
   next();
 });
+
+billSchema.statics.customerPay = async function (id, amount) {
+  const bill = await this.findOne({ _id: id }).select(
+    'moneyReceived remaining -items -customer'
+  );
+  console.log(bill);
+  // update amountPaid
+  const moneyReceived = parseFloat(bill.moneyReceived) + amount;
+
+  // update remaining
+  const remaining =
+    Math.round(parseFloat(bill.remaining) * 100000000 - amount * 100000000) /
+    100000000;
+
+  await this.updateOne(
+    { _id: id },
+    {
+      $set: {
+        moneyReceived,
+        remaining,
+        status: remaining > 0 ? 'partially-paid' : 'fully-paid',
+      },
+    }
+  );
+
+  const transaction = await Transaction.create({
+    transactionType: 'inflow',
+    amount,
+    billID: bill.id,
+  });
+
+  // update bill status
+  return transaction;
+};
 
 const billModel = mongoose.model('Bill', billSchema);
 

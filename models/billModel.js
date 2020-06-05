@@ -37,15 +37,7 @@ const billSchema = mongoose.Schema({
     type: mongoose.Decimal128,
     default: 12.5,
   },
-  shippingRateToVnInVND: {
-    type: mongoose.Decimal128,
-    default: function () {
-      return (
-        Math.round(this.shippingRateToVnInUSD * 100 + this.vndUsdRate * 100) /
-        100
-      );
-    },
-  },
+
   shippingFeeToVnInUSD: mongoose.Decimal128,
   moneyTransferReceipt: String,
   customer: {
@@ -131,16 +123,23 @@ billSchema.pre('save', async function (next) {
     },
   ]);
 
+  // calculate total bill estimated weight
   this.estimatedWeight = result[0].totalEstimatedWeight;
+
+  // calculate shipping fee to VN
   this.shippingFeeToVnInUSD =
     Math.round(
       parseFloat(this.estimatedWeight) * 100 * 10 * this.shippingRateToVnInUSD
     ) / 1000;
+
+  // calculate money to charge customer (include shipping fee)
   this.moneyChargeCustomerUSD =
     Math.round(
       this.shippingFeeToVnInUSD * 100000000 +
         parseFloat(result[0].moneyChargeCustomerUSD) * 100000000
     ) / 100000000;
+
+  // calculate total gift card money + shipping fee to VN
   this.totalBillInUsd =
     Math.round(
       this.shippingFeeToVnInUSD * 100000000 +
@@ -157,10 +156,11 @@ billSchema.pre('save', async function (next) {
 });
 
 billSchema.statics.customerPay = async function (id, amount) {
+  // find the bill doc to be paid
   const bill = await this.findOne({ _id: id }).select(
     'moneyReceived remaining -items -customer'
   );
-  console.log(bill);
+
   // update amountPaid
   const moneyReceived = parseFloat(bill.moneyReceived) + amount;
 

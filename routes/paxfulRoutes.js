@@ -3,6 +3,8 @@ const paxfulControllers = require('../controllers/paxfulControllers');
 
 const paxfulRouter = express.Router();
 
+paxfulRouter.get('/stats', paxfulControllers.getStats);
+
 paxfulRouter
   .route('/')
   .get(paxfulControllers.getAllPaxful)

@@ -9,7 +9,7 @@ const accounts = [
     _id: '5ecef412c697ac79087b4cfb',
     accountWebsite: accountWebsite[0],
     loginID: 'trinhthaibinh.ecom@gmail.com',
-    balance: 372.61,
+    balance: 0,
     addedAt: Date.now(),
     notes: '',
     accountType: accountTypes[0],
@@ -19,7 +19,7 @@ const accounts = [
     _id: '5ecef412c697ac79087b4cfc',
     accountWebsite: accountWebsite[0],
     loginID: 'btrinh27@student.cccd.edu',
-    balance: 12.48,
+    balance: 0,
     addedAt: Date.now(),
 
     notes: '',
@@ -30,7 +30,7 @@ const accounts = [
     _id: '5ecef412c697ac79087b4cfd',
     accountWebsite: accountWebsite[0],
     loginID: 'thaibinh.trinh@student.cccd.edu',
-    balance: 49.04,
+    balance: 0,
     addedAt: Date.now(),
 
     notes: '',
@@ -41,7 +41,7 @@ const accounts = [
     _id: '5ecef412c697ac79087b4cfe',
     accountWebsite: accountWebsite[0],
     loginID: 'tuongvo15694@gmail.com',
-    balance: 400,
+    balance: 0,
     addedAt: Date.now(),
 
     notes: '',
@@ -52,7 +52,7 @@ const accounts = [
     _id: '5ecef412c697ac79087b4cff',
     accountWebsite: accountWebsite[0],
     loginID: 'finoa_1709@yahoo.com',
-    balance: 400,
+    balance: 0,
     addedAt: Date.now(),
 
     notes: '',

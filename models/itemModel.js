@@ -46,10 +46,10 @@ const itemSchema = mongoose.Schema(
       type: mongoose.Decimal128,
       default: 0.0,
     },
-    shippingToVNFee: {
-      type: mongoose.Decimal128,
-      default: 10.0,
-    },
+    // shippingToVNFee: {
+    //   type: mongoose.Decimal128,
+    //   default: 10.0,
+    // },
     estimatedWeight: {
       type: mongoose.Decimal128,
       default: 0.0,
@@ -64,6 +64,7 @@ const itemSchema = mongoose.Schema(
     // },
 
     // actual gc cost, exclude shipping to VN fee
+    // update only after charge
     actualCost: {
       type: mongoose.Decimal128,
       default: 0.0,
@@ -83,7 +84,7 @@ const itemSchema = mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: 'Account',
     },
-    orderedDate: {
+    createdAt: {
       type: Date,
       default: Date.now(),
     },
@@ -109,23 +110,6 @@ const itemSchema = mongoose.Schema(
     notes: {
       type: String,
     },
-    // costForCustomer: {
-    //   type: mongoose.Decimal128,
-    //   // default: function () {
-    //   //   return (
-    //   //     Math.round(
-    //   //       this.pricePerItem *
-    //   //         100 *
-    //   //         this.quantity *
-    //   //         Math.round(this.tax * 1000 + 1000)
-    //   //     ) /
-    //   //       100000 +
-    //   //     Math.round(this.usShippingFee * 100000) / 100000 +
-    //   //     Math.round(this.estimatedWeight * this.shippingToVNFee * 100000) /
-    //   //       100000
-    //   //   );
-    //   // },
-    // },
   },
   {
     toJSON: { virtuals: true },
@@ -156,19 +140,19 @@ const itemSchema = mongoose.Schema(
 //   next();
 // });
 
-itemSchema.virtual('totalCostForCustomer').get(function () {
-  return (
-    Math.round(
-      this.pricePerItem *
-        100 *
-        this.quantity *
-        Math.round(this.tax * 10000 + 10000)
-    ) /
-      1000000 +
-    Math.round(this.usShippingFee * 1000000) / 1000000 +
-    Math.round(this.estimatedWeight * this.shippingToVNFee * 1000000) / 1000000
-  );
-});
+// itemSchema.virtual('totalCostForCustomer').get(function () {
+//   return (
+//     Math.round(
+//       this.pricePerItem *
+//         100 *
+//         this.quantity *
+//         Math.round(this.tax * 10000 + 10000)
+//     ) /
+//       1000000 +
+//     Math.round(this.usShippingFee * 1000000) / 1000000 +
+//     Math.round(this.estimatedWeight * this.shippingToVNFee * 1000000) / 1000000
+//   );
+// });
 
 itemSchema.pre(/^find/, function (next) {
   this.populate({
@@ -178,8 +162,6 @@ itemSchema.pre(/^find/, function (next) {
 
   next();
 });
-
-async function calculateFIFO(item, giftcards, id) {}
 
 itemSchema.statics.createTransaction = async function (id) {
   // query and calculate total gift card cost
@@ -192,6 +174,7 @@ itemSchema.statics.createTransaction = async function (id) {
     {
       $project: {
         orderAccount: 1,
+        actualCost: 1,
         total: {
           // $add: ['$tax', '$usShippingFee', '$quantity', '$pricePerItem'],
           $add: [
@@ -224,8 +207,6 @@ itemSchema.statics.createTransaction = async function (id) {
     },
   ]);
 
-  console.log(item[0]);
-
   // throw error if account not have enough balance to charge
   if (item[0].total > item[0].orderAccountInfo.balance) {
     return new AppError('Not enough balance in account', 400);
@@ -241,7 +222,7 @@ itemSchema.statics.createTransaction = async function (id) {
     },
     {
       $sort: {
-        timeBuy: 1,
+        createdAt: 1,
       },
     },
     {
@@ -259,7 +240,6 @@ itemSchema.statics.createTransaction = async function (id) {
       },
     },
   ]);
-  console.log(giftcards[0].partialBalance);
 
   if (giftcards.length === 0) {
     return new AppError('Not enough balance', 400);
@@ -269,8 +249,6 @@ itemSchema.statics.createTransaction = async function (id) {
   let actualCost = 0;
   let index = 0;
   const giftCardPromises = [];
-
-  console.log(remaining);
 
   // charge full amount of gift card partial balance
   while (
@@ -330,8 +308,6 @@ itemSchema.statics.createTransaction = async function (id) {
     index += 1;
   }
 
-  console.log(index);
-
   if (index >= giftcards.length) {
     return new AppError('not enough balance', 400);
   }
@@ -359,15 +335,13 @@ itemSchema.statics.createTransaction = async function (id) {
       Math.round(
         remaining * 100000000 - currentPartial.remainingBalance * 100000000
       ) / 100000000;
-    console.log(parseFloat(currentPartial.remainingBalance));
+
     giftcards[index].remainingBalance =
       Math.round(
         giftcards[index].remainingBalance * 100000000 -
           currentPartial.remainingBalance * 100000000
       ) / 100000000;
     currentPartial.remainingBalance = 0;
-
-    console.log(actualCost, 2);
 
     giftCardPromises.push(
       GiftCard.updateOne(
@@ -463,8 +437,6 @@ itemSchema.statics.createTransaction = async function (id) {
   //     ) / 100000000;
   // }
 
-  console.log(giftcards[index].remainingBalance);
-
   giftCardPromises.push(
     GiftCard.updateOne(
       {
@@ -479,16 +451,6 @@ itemSchema.statics.createTransaction = async function (id) {
   );
 
   // update account balance
-  console.log(item[0].total);
-  console.log(parseFloat(item[0].orderAccountInfo.balance), 9999);
-  console.log(
-    Math.round(
-      parseFloat(item[0].orderAccountInfo.balance) * 100000000 -
-        parseFloat(item[0].total) * 100000000
-    ) / 100000000,
-    8888
-  );
-  console.log(item[0].orderAccount);
   giftCardPromises.push(
     Account.updateOne(
       {

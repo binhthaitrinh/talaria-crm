@@ -14,7 +14,7 @@ const giftCardSchema = mongoose.Schema({
     ref: 'Account',
     required: [true, 'Gift card deposit must have an account ID'],
   },
-  timeBuy: {
+  createdAt: {
     type: Date,
     default: Date.now(),
   },
@@ -70,7 +70,7 @@ giftCardSchema.pre('save', async function (next) {
     },
     {
       $sort: {
-        date: 1,
+        createdAt: 1,
       },
     },
     {
@@ -84,8 +84,6 @@ giftCardSchema.pre('save', async function (next) {
   if (paxfuls.length === 0) {
     return next(new AppError('not enough BTC', 400));
   }
-
-  console.log(paxfuls);
 
   let remainingBtcNeeded = parseFloat(this.priceInBTC);
   let remainingGc = parseFloat(this.giftCardValue);
@@ -167,24 +165,19 @@ giftCardSchema.pre('save', async function (next) {
     }
   );
 
-  console.log(paxfuls);
-  console.log(paxfuls.length);
-  console.log(rates);
-  console.log(remainingBtcInPaxful);
-
   this.partialBalance = rates;
 
-  const accountBalance = await Account.findById(this.accountID);
+  const currentAccount = await Account.findById(this.accountID);
+
+  if (!currentAccount) return next(new AppError('Account not found', 400));
   const newBalance =
     Math.round(
-      parseFloat(accountBalance.balance) * 100000000 +
+      parseFloat(currentAccount.balance) * 100000000 +
         this.giftCardValue * 100000000
     ) / 100000000;
-  accountBalance.balance = newBalance;
+  currentAccount.balance = newBalance;
 
-  await accountBalance.save();
-
-  console.log(accountBalance);
+  await currentAccount.save();
   await Promise.all(paxfuls);
 
   // let remaining = parseFloat(this.priceInBTC);

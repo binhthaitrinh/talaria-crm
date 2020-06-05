@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Bill = require('./billModel');
 
 const transactionSchema = mongoose.Schema({
   transactionType: {
@@ -33,47 +32,6 @@ const transactionSchema = mongoose.Schema({
   notes: String,
   balance: mongoose.Decimal128,
 });
-
-transactionSchema.statics.getStats = async function () {
-  const totalTransactionAmount = await this.aggregate([
-    {
-      $group: {
-        _id: '$transactionType',
-        count: { $sum: 1 },
-        totalMoneySpent: { $sum: '$amount' },
-      },
-    },
-  ]);
-
-  const totalRevenue = await Bill.aggregate([
-    {
-      $group: {
-        _id: null,
-        count: { $sum: 1 },
-        total: { $sum: '$moneyChargeCustomerVND' },
-      },
-    },
-  ]);
-
-  const amountReceived =
-    totalTransactionAmount[0]._id === 'inflow'
-      ? parseFloat(totalTransactionAmount[0].totalMoneySpent)
-      : parseFloat(totalTransactionAmount[1].totalMoneySpent);
-
-  const amountSpent =
-    totalTransactionAmount[0]._id === 'outflow'
-      ? parseFloat(totalTransactionAmount[0].totalMoneySpent)
-      : parseFloat(totalTransactionAmount[1].totalMoneySpent);
-
-  const profit = amountReceived - amountSpent;
-
-  return {
-    amountReceived,
-    amountSpent,
-    totalRevenue: parseFloat(totalRevenue[0].total),
-    profit,
-  };
-};
 
 const transactionModel = mongoose.model('Transaction', transactionSchema);
 

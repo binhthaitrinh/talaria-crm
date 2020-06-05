@@ -35,6 +35,10 @@ const accounts = JSON.parse(
 const paxfuls = JSON.parse(
   fs.readFileSync(`${__dirname}/paxful.json`, 'utf-8')
 );
+
+const giftcards = JSON.parse(
+  fs.readFileSync(`${__dirname}/giftcard.json`, 'utf-8')
+);
 // const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'));
 // const reviews = JSON.parse(
 //   fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8')
@@ -51,6 +55,17 @@ const importData = async () => {
       console.log('Data successfully loaded');
     } else if (process.argv[3] === '--paxful') {
       await Paxful.create(paxfuls);
+    } else if (process.argv[3] === '--giftcard') {
+      await GiftCard.create(giftcards[0]);
+      await GiftCard.create(giftcards[1]);
+      await GiftCard.create(giftcards[2]);
+      await GiftCard.create(giftcards[3]);
+      await GiftCard.create(giftcards[4]);
+      await GiftCard.create(giftcards[5]);
+      await GiftCard.create(giftcards[6]);
+      await GiftCard.create(giftcards[7]);
+      await GiftCard.create(giftcards[8]);
+      await GiftCard.create(giftcards[9]);
     }
 
     process.exit();

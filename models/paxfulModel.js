@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+const AppError = require('../utils/appError');
 
 const paxfulSchema = mongoose.Schema({
-  date: {
+  createdAt: {
     type: Date,
     default: Date.now(),
   },
@@ -18,6 +19,7 @@ const paxfulSchema = mongoose.Schema({
   },
   withdrawFee: {
     type: mongoose.Decimal128,
+    default: 0,
     currency: {
       type: String,
       enum: ['vnd', 'usd'],
@@ -50,20 +52,24 @@ const paxfulSchema = mongoose.Schema({
 });
 
 paxfulSchema.pre('save', function (next) {
-  console.log('saving...');
-  console.log(this);
+  if (parseFloat(this.btcAmount) <= 0) {
+    return next(new AppError('Deposit BTC amount must be positive', 400));
+  }
+
+  if (this.moneySpent.currency === 'usd') {
+    this.moneySpent.amount =
+      Math.round(this.moneySpent.amount * 100 * this.usdVndRate * 100) / 10000;
+    this.moneySpent.currency = 'vnd';
+  }
   this.remainingBalance.amount = parseFloat(this.btcAmount);
 
-  if (parseFloat(this.remainingBalance.amount) !== 0) {
-    this.remainingBalance.rating =
-      Math.round(
-        ((parseFloat(this.moneySpent.amount) * 100000000) /
-          (parseFloat(this.btcAmount) * 100000000)) *
-          100000000
-      ) / 100000000;
-  } else {
-    this.remainingBalance.rating = null;
-  }
+  this.remainingBalance.rating =
+    Math.round(
+      ((parseFloat(this.moneySpent.amount) * 100000000) /
+        (parseFloat(this.btcAmount) * 100000000 +
+          parseFloat(this.withdrawFee) * 100000000)) *
+        100000000
+    ) / 100000000;
 
   next();
 });

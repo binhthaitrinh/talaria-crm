@@ -1,19 +1,8 @@
-const mongoose = require('mongoose');
 const Item = require('../models/itemModel');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handleFactory');
 
-exports.getAllItems = catchAsync(async (req, res, next) => {
-  const items = await Item.find();
-
-  res.status(200).json({
-    status: 'success',
-    results: items.length,
-    data: {
-      data: items,
-    },
-  });
-});
+exports.getAllItems = factory.getAll(Item);
 
 exports.createItem = catchAsync(async (req, res, next) => {
   const item = await Item.create(req.body);

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 const Transaction = require('./transactionModel');
 const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');

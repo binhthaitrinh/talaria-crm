@@ -10,6 +10,8 @@ const giftCardRouter = require('./routes/giftCardRoutes');
 const customerRouter = require('./routes/customerRoutes');
 const affiliateRouter = require('./routes/affiliateRoutes');
 const billRouter = require('./routes/billRoutes');
+const manageRouter = require('./routes/manageRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -18,6 +20,11 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
 
 // body parser middleware
 app.use(express.json());
@@ -33,6 +40,8 @@ app.use('/api/v1/giftcards', giftCardRouter);
 app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/affiliates', affiliateRouter);
 app.use('/api/v1/bills', billRouter);
+app.use('/api/v1/manage', manageRouter);
+app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

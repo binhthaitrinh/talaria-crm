@@ -66,8 +66,6 @@ billSchema.pre(/^find/, function (next) {
 });
 
 billSchema.pre('save', async function (next) {
-  console.log(Item);
-  console.log(Transaction);
   const result = await Item.aggregate([
     {
       $match: {

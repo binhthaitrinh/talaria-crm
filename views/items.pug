@@ -1,0 +1,29 @@
+extends base
+
+block content
+   h1 Welcome to Talaria
+   table
+      thead
+         tr
+            th Date
+            th.limit-width Tracking link
+            th Link 
+            th Name
+            th Type
+            th Status
+            th Price
+            th Total Price
+      tbody
+         each item in items
+            tr
+               th= new Date(item.createdAt).toLocaleString('en-us', {month: 'long', year: 'numeric', day: 'numeric'})
+               th.limit-width 
+                  a(href=`${item.trackingLink}`)= item.trackingLink
+               th.limit-width
+                  a(href=`${item.link}`)= item.link
+               th= item.name
+               th= `${item.itemType ? item.itemType : 'no info'}`
+               th= item.status
+               th= item.pricePerItem
+               th= `${item.actualCost}`
+      

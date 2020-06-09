@@ -1,29 +1,40 @@
 extends base
 
 block content
-   h1 Welcome to Talaria
-   table
-      thead
+   h1.text-6xl Welcome to Talaria
+   table.table-fixed(class="w-11/12 mx-auto")
+      thead.bg-teal-500.text-white
          tr
-            th Date
-            th.limit-width Tracking link
-            th Link 
-            th Name
-            th Type
-            th Status
-            th Price
-            th Total Price
+            th.border(class="w-1/12 px-4 py-2") Date
+            th.border(class="w-1/6 px-4 py-2") Tracking link
+            th.border(class="w-1/6 px-4 py-2") Link 
+            th.border Name
+            th.border(class="w-1/12 px-4 py-2") Type
+            th.border Status
+            th.border(class="w-1/12 px-4 py-2") Price
+            th.border(class="w-1/12") Quantity
+            th.border Total Price
       tbody
          each item in items
-            tr
-               th= new Date(item.createdAt).toLocaleString('en-us', {month: 'long', year: 'numeric', day: 'numeric'})
-               th.limit-width 
+            tr(v-for="item in items" class="bg-white odd:bg-gray-200")
+               th.border(class="px-4 py-2")= new Date(item.createdAt).toLocaleString('en-us', {month: 'long', year: 'numeric', day: 'numeric'})
+               th.border(class="px-4 py-2 truncate")
                   a(href=`${item.trackingLink}`)= item.trackingLink
-               th.limit-width
+               th.border(class="px-4 py-2 truncate")
                   a(href=`${item.link}`)= item.link
-               th= item.name
-               th= `${item.itemType ? item.itemType : 'no info'}`
-               th= item.status
-               th= item.pricePerItem
-               th= `${item.actualCost}`
+               th.border
+                  if item.name.length > 20
+                     div.tooltip= item.name.slice(0, 20)
+                        span.tooltiptext= item.name
+                  else
+                     di.tooltip= item.name
+               th.border= `${item.itemType ? item.itemType : 'no info'}`
+               th.border= item.status.split('-').join(' ')
+               th.border= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'USD'}).format(item.pricePerItem)
+               th.border= item.quantity
+               if item.status === 'ordered'
+                  th.border= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'VND'}).format(item.actualCost)
+               else
+                  th.border 
+                     button(class="bg-orange-300 rounded px-3 py-1 hover:bg-orange-500 hover:text-white") Order
       

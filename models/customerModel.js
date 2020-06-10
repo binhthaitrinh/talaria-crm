@@ -24,7 +24,7 @@ const customerSchema = mongoose.Schema({
   phoneNumber: String,
   discountRate: {
     type: mongoose.Decimal128,
-    default: 0,
+    default: 18,
   },
   notes: String,
   bankAccounts: [

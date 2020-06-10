@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 const Transaction = require('./transactionModel');
 const Item = require('./itemModel');
+const Customer = require('./customerModel');
 
 const billSchema = mongoose.Schema({
   date: {
@@ -66,6 +67,10 @@ billSchema.pre(/^find/, function (next) {
 });
 
 billSchema.pre('save', async function (next) {
+  const customer = await Customer.findById(this.customer).select(
+    'discountRate'
+  );
+
   const result = await Item.aggregate([
     {
       $match: {
@@ -85,7 +90,11 @@ billSchema.pre('save', async function (next) {
             $add: [
               '$usShippingFee',
               {
-                $multiply: ['$pricePerItem', '$quantity', 0.82],
+                $multiply: [
+                  '$pricePerItem',
+                  '$quantity',
+                  (100 - customer.discountRate) / 100,
+                ],
               },
               {
                 $multiply: [

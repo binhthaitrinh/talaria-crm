@@ -17,24 +17,24 @@ block content
       tbody
          each item in items
             tr(v-for="item in items" class="bg-white odd:bg-gray-200")
-               th.border(class="px-4 py-2")= new Date(item.createdAt).toLocaleString('en-us', {month: 'long', year: 'numeric', day: 'numeric'})
-               th.border(class="px-4 py-2 truncate")
+               th.border-b-2(class="px-4 py-2")= new Date(item.createdAt).toLocaleString('en-us', {month: 'long', year: 'numeric', day: 'numeric'})
+               th.border-b-2(class="px-4 py-2 truncate")
                   a(href=`${item.trackingLink}`)= item.trackingLink
-               th.border(class="px-4 py-2 truncate")
+               th.border-b-2(class="px-4 py-2 truncate")
                   a(href=`${item.link}`)= item.link
-               th.border
+               th.border-b-2
                   if item.name.length > 20
                      div.tooltip= item.name.slice(0, 20)
                         span.tooltiptext= item.name
                   else
                      di.tooltip= item.name
-               th.border= `${item.itemType ? item.itemType : 'no info'}`
-               th.border= item.status.split('-').join(' ')
-               th.border= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'USD'}).format(item.pricePerItem)
-               th.border= item.quantity
+               th.border-b-2= `${item.itemType ? item.itemType : 'no info'}`
+               th.border-b-2= item.status.split('-').join(' ')
+               th.border-b-2= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'USD'}).format(item.pricePerItem)
+               th.border-b-2= item.quantity
                if item.status === 'ordered'
-                  th.border= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'VND'}).format(item.actualCost)
+                  th.border-b-2= new Intl.NumberFormat('de-DE', {style: 'currency', currency: 'VND'}).format(item.actualCost)
                else
-                  th.border 
+                  th.border-b-2 
                      button(class="bg-orange-300 rounded px-3 py-1 hover:bg-orange-500 hover:text-white") Order
       

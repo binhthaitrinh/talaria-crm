@@ -3,7 +3,7 @@ import styled from 'styled-components';
 const Table = styled.table`
   border-spacing: 0;
   width: 100%;
-  border: 1px solid ${(props) => props.theme.offWhite};
+  /* border: 1px solid ${(props) => props.theme.offWhite}; */
   table-layout: fixed;
   
     font-size: 10px;
@@ -11,7 +11,7 @@ const Table = styled.table`
   td,
   th {
     border-bottom: 1px solid ${(props) => props.theme.offWhite};
-    border-right: 1px solid ${(props) => props.theme.offWhite};
+    /* border-right: 1px solid ${(props) => props.theme.offWhite}; */
     position: relative;
     padding: 5px;
     &:last-child {

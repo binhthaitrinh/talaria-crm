@@ -9,42 +9,42 @@ const menuItems = [
   {
     pathname: '/',
     item: 'Dashboard',
-    icon: 'fas fa-columns',
+    icon: 'analytics-outline',
   },
   {
     pathname: '/items',
     item: 'Items',
-    icon: 'fas fa-columns',
+    icon: 'pricetags-outline',
   },
   {
     pathname: '/customers',
     item: 'Customers',
-    icon: 'fas fa-user-friends',
+    icon: 'people-outline',
   },
   {
     pathname: '/affiliates',
     item: 'Affiliates',
-    icon: 'fab fa-sellsy',
+    icon: 'git-network-outline',
   },
   {
     pathname: '/giftcards',
     item: 'Gift cards',
-    icon: 'fas fa-gift',
+    icon: 'gift-outline',
   },
   {
     pathname: '/paxful',
     item: 'Paxful',
-    icon: 'fab fa-bitcoin',
+    icon: 'logo-bitcoin',
   },
   {
     pathname: '/transactions',
     item: 'Transactions',
-    icon: 'fab fa-cc-mastercard',
+    icon: 'card-outline',
   },
   {
     pathname: '/bills',
     item: 'Bills',
-    icon: 'fas fa-money-bill',
+    icon: 'cash-outline',
   },
 ];
 
@@ -61,8 +61,8 @@ const SidebarIcons = (props) => {
           >
             <Link href={item.pathname}>
               <a>
-                <i className={item.icon}></i>
-                {item.item}
+                <ion-icon name={item.icon}></ion-icon>
+                <span>{item.item}</span>
               </a>
             </Link>
           </MenuItem>

@@ -2,6 +2,8 @@ import React from 'react';
 import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
 import Layout from './styles/Layout';
 import SidebarIcons from './SidebarIcons';
+import Header from './Header';
+import MainContentLayout from './styles/MainContentLayout';
 
 const theme = {
   primary: '#00909e',
@@ -36,13 +38,26 @@ body {
     /*font-size: 16px;*/
     line-height: 1.7;
     color: ${(props) => props.theme.black};
-    
+    font-size: 62.5%;
 }
 
 a {
    text-decoration: none;
+   color: inherit;
 }
 
+ul {
+  list-style: none;
+}
+
+#__next {
+  position: relative;
+
+  width: 100%;
+  height: 100vh;
+  background-image: linear-gradient(to right, ${(props) =>
+    props.theme.primary}, ${(props) => props.theme.primaryDark})
+}
 
 
 `;
@@ -53,11 +68,13 @@ class Page extends React.Component {
       <ThemeProvider theme={theme}>
         <GlobalStyle />
         <Layout>
-          <SidebarIcons />
-
-          {this.props.children}
+          <Header />
+          <MainContentLayout>
+            <SidebarIcons />
+            {this.props.children}
+          </MainContentLayout>
         </Layout>
-
+        <script src="https://unpkg.com/ionicons@5.0.0/dist/ionicons.js"></script>
         {/* <Meta /> */}
       </ThemeProvider>
     );

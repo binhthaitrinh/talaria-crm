@@ -11,7 +11,7 @@ const Container = styled.div`
   background-color: #fff;
   width: 100%;
   height: 100%;
-  padding: 5rem 10rem;
+  padding: 4rem 5rem;
   transition: all 0.5s ease-out;
 `;
 
@@ -24,18 +24,46 @@ export default function Items(props) {
         <Table>
           <thead>
             <tr>
+              <th>Created At</th>
+              <th>Tracking Link</th>
+              <th>Item Link</th>
+              <th>City</th>
               <th>Name</th>
-              <th>Email</th>
-
-              <th>Update</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Notes</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
             {props.items.data.map((item) => (
               <tr key={item.id}>
+                <th>
+                  {new Date(item.createdAt).toLocaleString('en-us', {
+                    month: 'long',
+                    year: 'numeric',
+                    day: 'numeric',
+                  })}
+                </th>
+                <th>
+                  <a href={item.trackingLink}>
+                    {item.trackingLink.slice(0, 20)}...
+                  </a>
+                </th>
+                <th>
+                  <a href={item.link}>{item.link.slice(0, 20)}...</a>
+                </th>
                 <th>{item.name}</th>
-                <th>{item.pricePerItem}</th>
-                <th>{item.quantiy}</th>
+                <th>{item.name}</th>
+                <th>
+                  {new Intl.NumberFormat('de-DE', {
+                    style: 'currency',
+                    currency: 'USD',
+                  }).format(item.pricePerItem)}
+                </th>
+                <th>{item.quantity}</th>
+                <th>{item.notes}</th>
+                <th>{item.status}</th>
               </tr>
             ))}
           </tbody>

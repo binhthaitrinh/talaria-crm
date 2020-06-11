@@ -11,7 +11,6 @@ const customerRouter = require('./routes/customerRoutes');
 const affiliateRouter = require('./routes/affiliateRoutes');
 const billRouter = require('./routes/billRoutes');
 const manageRouter = require('./routes/manageRoutes');
-const viewRouter = require('./routes/viewRoutes');
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -46,7 +45,6 @@ app.use('/api/v1/customers', customerRouter);
 app.use('/api/v1/affiliates', affiliateRouter);
 app.use('/api/v1/bills', billRouter);
 app.use('/api/v1/manage', manageRouter);
-app.use('/', viewRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

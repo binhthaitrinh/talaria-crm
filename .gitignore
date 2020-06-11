@@ -26,4 +26,5 @@ yarn-error.log*
 # Local Netlify folder
 .netlify
 
-/client/node_modules
+/client
+/frontend/node_modules

@@ -1,5 +1,9 @@
 import React from 'react';
 import { ThemeProvider, createGlobalStyle } from 'styled-components';
+import Container from './styles/Container';
+import Header from './Header';
+import Sidebar from './Sidebar';
+import Main from './Main';
 
 const theme = {
   primary: '#00909e',
@@ -14,12 +18,6 @@ const theme = {
 };
 
 const GlobalStyle = createGlobalStyle`
-
-@font-face {
-   font-family: "Roboto";
-   src: url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap");
-}
-
    *,
 *::after,
 *::before {
@@ -51,6 +49,11 @@ ul {
   list-style: none;
 }
 
+img {
+   width: 100%;
+   height: auto;
+}
+
 #__next {
   position: relative;
 
@@ -65,7 +68,11 @@ class Page extends React.Component {
     return (
       <ThemeProvider theme={theme}>
         <GlobalStyle />
-        {this.props.children}
+        <Container>
+          <Header />
+          <Sidebar />
+          <Main>{this.props.children}</Main>
+        </Container>
       </ThemeProvider>
     );
   }

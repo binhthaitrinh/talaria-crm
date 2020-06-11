@@ -4,7 +4,7 @@ const HeaderStyle = styled.header`
   width: 100%;
   background-color: white;
   box-shadow: 0px 2px 16px -2px rgba(0, 0, 0, 0.15);
-  height: 10rem;
+  height: 7.2rem;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   z-index: 10;

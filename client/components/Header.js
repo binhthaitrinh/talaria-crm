@@ -4,8 +4,9 @@ import styled from 'styled-components';
 import SearchInput from './SeachInput';
 
 const Logo = styled.img`
-  height: 5.4rem;
+  height: 4.8rem;
   border-radius: 5px;
+  margin-left: 2rem;
 `;
 
 const LogoBox = styled.div`

@@ -7,42 +7,42 @@ import MenuItem from './styles/MenuItem';
 
 const menuItems = [
   {
-    pathname: '/',
+    pathname: '',
     item: 'Dashboard',
     icon: 'analytics-outline',
   },
   {
-    pathname: '/items',
+    pathname: 'items',
     item: 'Items',
     icon: 'pricetags-outline',
   },
   {
-    pathname: '/customers',
+    pathname: 'customers',
     item: 'Customers',
     icon: 'people-outline',
   },
   {
-    pathname: '/affiliates',
+    pathname: 'affiliates',
     item: 'Affiliates',
     icon: 'git-network-outline',
   },
   {
-    pathname: '/giftcards',
+    pathname: 'giftcards',
     item: 'Gift cards',
     icon: 'gift-outline',
   },
   {
-    pathname: '/paxful',
+    pathname: 'paxful',
     item: 'Paxful',
     icon: 'logo-bitcoin',
   },
   {
-    pathname: '/transactions',
+    pathname: 'transactions',
     item: 'Transactions',
     icon: 'card-outline',
   },
   {
-    pathname: '/bills',
+    pathname: 'bills',
     item: 'Bills',
     icon: 'cash-outline',
   },
@@ -57,9 +57,11 @@ const SidebarIcons = (props) => {
         {menuItems.map((item, index) => (
           <MenuItem
             key={index}
-            className={router.pathname === item.pathname ? 'active' : ''}
+            className={
+              router.pathname.split('/')[1] === item.pathname ? 'active' : ''
+            }
           >
-            <Link href={item.pathname}>
+            <Link href={`/${item.pathname}`}>
               <a>
                 <ion-icon name={item.icon}></ion-icon>
                 <span>{item.item}</span>

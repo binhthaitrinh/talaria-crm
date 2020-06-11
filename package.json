@@ -21,6 +21,7 @@
     "moment": "^2.26.0",
     "mongoose": "^5.9.16",
     "morgan": "^1.10.0",
+    "nprogress": "^0.2.0",
     "pug": "^3.0.0",
     "validator": "^13.0.0"
   },
@@ -42,5 +43,6 @@
     "postcss-cli": "^7.1.1",
     "prettier": "^2.0.5",
     "tailwindcss": "^1.4.6"
-  }
+  },
+  "proxy": "http://localhost:3000"
 }

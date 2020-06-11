@@ -6,20 +6,26 @@ const Table = styled.table`
   /* border: 1px solid ${(props) => props.theme.offWhite}; */
   table-layout: fixed;
   
-    font-size: 10px;
+    font-size: 1.2rem;
+  
+  thead {
+    td, th {
+      font-weight: 700;
+    }
   }
+
   td,
   th {
-    border-bottom: 1px solid ${(props) => props.theme.offWhite};
+    /* border-bottom: 1px solid ${(props) => props.theme.primaryLight}; */
     /* border-right: 1px solid ${(props) => props.theme.offWhite}; */
     position: relative;
-    padding: 5px;
+    padding: 1.2rem 0.6rem;
+    font-weight: 300;
     &:last-child {
       border-right: none;
       width: 150px;
-      button {
-        width: 100%;
-      }
+      position: relative;
+      
     }
     label {
       padding: 10px 5px;
@@ -30,11 +36,7 @@ const Table = styled.table`
        width: 10rem;
     }
   }
-  tr {
-    &:hover {
-      background: ${(props) => props.theme.offWhite};
-    }
-  }
+
 `;
 
 export default Table;

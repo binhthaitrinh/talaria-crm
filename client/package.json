@@ -19,5 +19,6 @@
   "devDependencies": {
     "autoprefixer": "^9.8.0",
     "tailwindcss": "^1.4.6"
-  }
+  },
+  "proxy": "http://localhost:4444"
 }

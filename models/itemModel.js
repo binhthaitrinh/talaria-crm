@@ -156,7 +156,7 @@ const itemSchema = mongoose.Schema(
 itemSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'orderAccount',
-    select: 'balance',
+    select: 'balance loginID',
   });
 
   next();

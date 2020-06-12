@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const itemRouter = require('./routes/itemRoutes');
@@ -16,6 +17,11 @@ const AppError = require('./utils/appError');
 
 const app = express();
 
+const corsOptions = {
+  origin: 'http://localhost:3000',
+};
+
+app.use(cors(corsOptions));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   next();

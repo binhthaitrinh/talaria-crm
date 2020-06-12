@@ -4,6 +4,18 @@ import Container from './styles/Container';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Main from './styles/Main';
+import NProgress from 'nprogress';
+import Router from 'next/router';
+
+Router.onRouteChangeStart = () => {
+  NProgress.start();
+};
+Router.onRouteChangeComplete = () => {
+  NProgress.done();
+};
+Router.onRouteChangeError = () => {
+  NProgress.done();
+};
 
 const theme = {
   primary: '#00909e',

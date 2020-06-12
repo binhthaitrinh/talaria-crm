@@ -27,4 +27,18 @@ export default class MyDocument extends Document {
       sheet.seal();
     }
   }
+
+  render() {
+    return (
+      <html>
+        <Head />
+        <body>
+          <Main />
+          {/* Here we will mount our modal portal */}
+          <div id="modal" />
+          <NextScript />
+        </body>
+      </html>
+    );
+  }
 }

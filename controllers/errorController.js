@@ -1,6 +1,17 @@
 const AppError = require('../utils/appError');
 
 const sendErrorDev = (err, req, res) => {
+  console.log(err.name);
+  if (err.name === 'ValidationError') {
+    const errors = Object.values(err.errors).map((el) => el.message);
+
+    const message = `Invalid input data. ${errors.join('. ')}`;
+    const error = new AppError(message, 400);
+    return res.status(error.statusCode).json({
+      status: error.status,
+      message: error.message,
+    });
+  }
   console.log(req.originalUrl);
   return res.status(err.statusCode).json({
     status: err.status,

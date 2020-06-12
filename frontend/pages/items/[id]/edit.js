@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import Loader from '../../../components/styles/Loader';
 import axios from 'axios';
 import EditItem from '../../../components/EditItem';
+import Noti from '../../../components/Noti';
 
 export default function Edit() {
   const [item, setItem] = useState({});
@@ -33,6 +34,7 @@ export default function Edit() {
   return (
     <>
       <Meta title="Edit item" />
+
       <MainCntHeader>
         <Title>Item {id}</Title>
       </MainCntHeader>

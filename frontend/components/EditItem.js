@@ -7,6 +7,8 @@ import FormLabel from './styles/FormLabel';
 import SubmitBtn from './styles/SubmitBtn';
 import axios from 'axios';
 import LoadingBtn from './styles/LoadingBtn';
+import Noti from './Noti';
+import Router from 'next/router';
 
 const EditItem = ({ item }) => {
   const [name, setName] = useState(item.name);
@@ -27,7 +29,8 @@ const EditItem = ({ item }) => {
   const [orderAccount, setOrderAccount] = useState(item.orderAccount);
   const [pricePerItem, setPrice] = useState(item.pricePerItem);
   const [loading, setLoading] = useState(false);
-
+  const [showNoti, setShowNoti] = useState(false);
+  const [message, setMessage] = useState('');
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -46,13 +49,29 @@ const EditItem = ({ item }) => {
 
       console.log('Done');
       setLoading(false);
+      setMessage('success');
+      setShowNoti(true);
+      setTimeout(() => {
+        setShowNoti(false);
+        Router.push(`/items/${item.id}`);
+        setMessage('');
+      }, 2000);
     } catch (err) {
-      console.log(err);
+      console.log(err.response.data.message);
+      setMessage(err.response.data.message);
+      setShowNoti(true);
+      setTimeout(() => {
+        setShowNoti(false);
+        setMessage('');
+      }, 3000);
+
+      setLoading(false);
     }
   };
 
   return (
     <MainContent>
+      {showNoti ? <Noti message={message} /> : null}
       <Form
         onSubmit={(e) => {
           e.preventDefault();

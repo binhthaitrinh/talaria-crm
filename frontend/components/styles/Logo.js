@@ -3,12 +3,14 @@ import styled from 'styled-components';
 const Logo = styled.div`
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem 0;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 1.6rem;
+  padding-left: 6.6rem;
+  margin-bottom: 1.8rem;
 
   img {
-    width: 12rem;
+    width: 9.6rem;
   }
 `;
 

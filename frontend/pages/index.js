@@ -1,10 +1,11 @@
 import Meta from '../components/Meta';
+import Title from '../components/styles/Title';
 
 export default function Home() {
   return (
     <>
-      <Meta />
-      <h1>Hello world</h1>
+      <Meta title="Dashboard" />
+      <Title>Dashboard</Title>
     </>
   );
 }

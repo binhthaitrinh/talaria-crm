@@ -3,7 +3,7 @@ import { ThemeProvider, createGlobalStyle } from 'styled-components';
 import Container from './styles/Container';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import Main from './Main';
+import Main from './styles/Main';
 
 const theme = {
   primary: '#00909e',
@@ -73,6 +73,7 @@ class Page extends React.Component {
           <Sidebar />
           <Main>{this.props.children}</Main>
         </Container>
+        <script src="https://unpkg.com/ionicons@5.0.0/dist/ionicons.js"></script>
       </ThemeProvider>
     );
   }

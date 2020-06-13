@@ -28,11 +28,20 @@ exports.getAll = (Model) => {
       .limitFields()
       .paginate();
     const doc = await features.query;
+    const numOfResults = await Model.aggregate([
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
     // SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: doc.length,
+      numOfResults: numOfResults[0].count,
       data: {
         data: doc,
       },

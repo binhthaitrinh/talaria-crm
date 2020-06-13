@@ -23,14 +23,6 @@
     "/items": [
       "static/runtime/webpack.js",
       "static/runtime/main.js"
-    ],
-    "/items/[id]": [
-      "static/runtime/webpack.js",
-      "static/runtime/main.js"
-    ],
-    "/items/[id]/edit": [
-      "static/runtime/webpack.js",
-      "static/runtime/main.js"
     ]
   }
 }

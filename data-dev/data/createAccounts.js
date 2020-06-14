@@ -61,8 +61,6 @@ const accounts = [
   },
 ];
 
-console.log(accounts.length);
-
 try {
   fs.writeFileSync(`${__dirname}/accounts.json`, JSON.stringify(accounts));
   console.log('Data writen to file...');

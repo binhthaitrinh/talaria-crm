@@ -27,4 +27,4 @@ yarn-error.log*
 .netlify
 
 /client
-/frontend/node_modules
+/frontend

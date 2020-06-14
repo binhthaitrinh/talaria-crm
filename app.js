@@ -1,6 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
 const itemRouter = require('./routes/itemRoutes');
@@ -12,6 +13,7 @@ const customerRouter = require('./routes/customerRoutes');
 const affiliateRouter = require('./routes/affiliateRoutes');
 const billRouter = require('./routes/billRoutes');
 const manageRouter = require('./routes/manageRoutes');
+
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
 
@@ -41,6 +43,8 @@ app.use(express.json());
 
 // parse data from URL encoded form
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+app.use(compression());
 
 app.use('/api/v1/items', itemRouter);
 app.use('/api/v1/transactions', transactionRouter);

@@ -29,14 +29,6 @@ exports.getStats = catchAsync(async (req, res, next) => {
     },
   ]);
 
-  paxfuls.forEach((px) => {
-    console.log('================================');
-    console.log(parseFloat(px.totalBtc));
-    console.log(px.month);
-    console.log(parseFloat(px.totalRemaining));
-    console.log('================================');
-  });
-
   res.status(200).json({
     status: 'success',
     data: 1,

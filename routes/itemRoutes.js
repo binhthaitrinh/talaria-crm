@@ -14,6 +14,9 @@ itemRouter
 
 itemRouter.route('/:id').get(itemControllers.getOneItem);
 
-itemRouter.route('/:id').patch(itemControllers.updateOne);
+itemRouter
+  .route('/:id')
+  .patch(itemControllers.updateOne)
+  .delete(itemControllers.deleteOne);
 
 module.exports = itemRouter;

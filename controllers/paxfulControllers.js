@@ -4,18 +4,20 @@ const catchAsync = require('../utils/catchAsync');
 
 exports.createPaxful = factory.createOne(Paxful);
 
-// exports.getAllPaxful = factory.getAll(Paxful);
-exports.getAllPaxful = catchAsync(async (req, res, next) => {
-  const paxfuls = await Paxful.find().sort({ createdAt: 1 });
+exports.getAllPaxful = factory.getAll(Paxful);
+// exports.getAllPaxful = catchAsync(async (req, res, next) => {
+//   console.log('caeed 111');
+//   const query = Paxful.find().sort({ createdAt: -1 });
+//   const paxfuls = await query;
 
-  res.status(200).json({
-    status: 'success',
-    results: paxfuls.length,
-    data: {
-      data: paxfuls,
-    },
-  });
-});
+//   res.status(200).json({
+//     status: 'success',
+//     results: paxfuls.length,
+//     data: {
+//       data: paxfuls,
+//     },
+//   });
+// });
 
 exports.updatePaxful = factory.updateOne(Paxful);
 

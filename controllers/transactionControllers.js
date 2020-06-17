@@ -1,18 +1,9 @@
 const Transaction = require('../models/transactionModel');
 const Bill = require('../models/billModel');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handleFactory');
 
-exports.getAllTransactions = catchAsync(async (req, res, next) => {
-  const transactions = await Transaction.find();
-
-  res.status(200).json({
-    status: 'success',
-    results: transactions.length,
-    data: {
-      data: transactions,
-    },
-  });
-});
+exports.getAllTransactions = factory.getAll(Transaction);
 
 exports.createTransaction = catchAsync(async (req, res, next) => {
   const transaction = await Transaction.create(req.body);

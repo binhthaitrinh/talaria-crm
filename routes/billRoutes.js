@@ -1,6 +1,6 @@
 const express = require('express');
 
-const billRouter = express.Router();
+const billRouter = express.Router({ mergeParams: true });
 const billControllers = require('../controllers/billControllers');
 
 billRouter.route('/:id').get(billControllers.getBill);

@@ -1,6 +1,5 @@
 const express = require('express');
 const paxfulControllers = require('../controllers/paxfulControllers');
-
 const paxfulRouter = express.Router();
 
 paxfulRouter.get('/stats', paxfulControllers.getStats);
@@ -10,6 +9,9 @@ paxfulRouter
   .get(paxfulControllers.getAllPaxful)
   .post(paxfulControllers.createPaxful);
 
-paxfulRouter.route('/:id').patch(paxfulControllers.updatePaxful);
+paxfulRouter
+  .route('/:id')
+  .patch(paxfulControllers.updatePaxful)
+  .get(paxfulControllers.getOne);
 
 module.exports = paxfulRouter;

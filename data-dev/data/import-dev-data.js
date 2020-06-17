@@ -54,7 +54,16 @@ const importData = async () => {
       await Account.create(accounts);
       console.log('Data successfully loaded');
     } else if (process.argv[3] === '--paxful') {
-      await Paxful.create(paxfuls);
+      await Paxful.create(paxfuls[0]);
+      await Paxful.create(paxfuls[1]);
+      await Paxful.create(paxfuls[2]);
+      await Paxful.create(paxfuls[3]);
+      await Paxful.create(paxfuls[4]);
+      await Paxful.create(paxfuls[5]);
+      await Paxful.create(paxfuls[6]);
+      await Paxful.create(paxfuls[7]);
+      await Paxful.create(paxfuls[8]);
+      await Paxful.create(paxfuls[9]);
     } else if (process.argv[3] === '--giftcard') {
       await GiftCard.create(giftcards[0]);
       await GiftCard.create(giftcards[1]);

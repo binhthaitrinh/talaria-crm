@@ -3,6 +3,7 @@ const Paxful = require('../models/paxfulModel');
 const catchAsync = require('../utils/catchAsync');
 
 exports.createPaxful = factory.createOne(Paxful);
+exports.getOne = factory.getOne(Paxful);
 
 exports.getAllPaxful = factory.getAll(Paxful);
 // exports.getAllPaxful = catchAsync(async (req, res, next) => {

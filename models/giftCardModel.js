@@ -66,6 +66,7 @@ giftCardSchema.pre('save', async function (next) {
         'remainingBalance.amount': {
           $gt: 0,
         },
+        transactionType: 'inflow',
       },
     },
     {
@@ -176,6 +177,14 @@ giftCardSchema.pre('save', async function (next) {
         this.giftCardValue * 100000000
     ) / 100000000;
   currentAccount.balance = newBalance;
+
+  await Paxful.create({
+    btcAmount:
+      Math.round(this.priceInBTC * 100000000 + this.feeBTC * 100000000) /
+      100000000,
+    transactionType: 'outflow',
+    createdAt: Date.now(),
+  });
 
   await currentAccount.save();
   await Promise.all(paxfuls);

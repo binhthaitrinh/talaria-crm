@@ -6,8 +6,15 @@ const accountRouter = express.Router();
 
 accountRouter.use('/:accountId/transactions', transactionRouter);
 
-accountRouter.route('/').get(accountControllers.getAllAccounts);
+accountRouter
+  .route('/')
+  .get(accountControllers.getAllAccounts)
+  .post(accountControllers.createAccount);
 
-accountRouter.route('/:id').get(accountControllers.getOneAccount);
+accountRouter
+  .route('/:id')
+  .get(accountControllers.getOneAccount)
+  .patch(accountControllers.updateAccount)
+  .delete(accountControllers.deleteAccount);
 
 module.exports = accountRouter;

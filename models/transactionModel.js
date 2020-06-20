@@ -33,6 +33,19 @@ const transactionSchema = mongoose.Schema({
   balance: mongoose.Decimal128,
 });
 
+transactionSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'itemID',
+    select: 'name _id quantity -orderAccount',
+  });
+
+  this.populate({
+    path: 'accountID',
+    select: 'loginID _id',
+  });
+  next();
+});
+
 const transactionModel = mongoose.model('Transaction', transactionSchema);
 
 module.exports = transactionModel;

@@ -22,3 +22,7 @@ exports.customerPay = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.deleteBill = factory.deleteOne(Bill);
+
+exports.updateBill = factory.updateOne(Bill);

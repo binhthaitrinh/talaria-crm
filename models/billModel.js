@@ -171,12 +171,13 @@ billSchema.statics.customerPay = async function (id, amount) {
   );
 
   // update amountPaid
-  const moneyReceived = parseFloat(bill.moneyReceived) + amount;
+  const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
 
   // update remaining
   const remaining =
-    Math.round(parseFloat(bill.remaining) * 100000000 - amount * 100000000) /
-    100000000;
+    Math.round(
+      parseFloat(bill.remaining) * 100000000 - parseFloat(amount) * 100000000
+    ) / 100000000;
 
   await this.updateOne(
     { _id: id },

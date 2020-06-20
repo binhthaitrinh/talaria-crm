@@ -1,17 +1,8 @@
 const Account = require('../models/accountModel');
 const catchAsync = require('../utils/catchAsync');
+const factory = require('./handleFactory');
 
-exports.getAllAccounts = catchAsync(async (req, res, next) => {
-  const accounts = await Account.find();
-
-  return res.status(200).json({
-    status: 'success',
-    results: accounts.length,
-    data: {
-      data: accounts,
-    },
-  });
-});
+exports.getAllAccounts = factory.getAll(Account);
 
 exports.getOneAccount = catchAsync(async (req, res, next) => {
   const query = Account.findById(req.params.id);
@@ -29,4 +20,7 @@ exports.getOneAccount = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createAccount = (req, res, next) => {};
+exports.updateAccount = factory.updateOne(Account);
+exports.deleteAccount = factory.deleteOne(Account);
+
+exports.createAccount = factory.createOne(Account);

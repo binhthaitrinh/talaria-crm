@@ -8,7 +8,7 @@ exports.getOneAccount = catchAsync(async (req, res, next) => {
   const query = Account.findById(req.params.id);
   query.populate({
     path: 'transactions',
-    select: 'transactionType amount -accountID',
+    select: 'transactionType amount gcCost -accountID',
   });
   const account = await query;
 

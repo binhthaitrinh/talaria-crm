@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Paxful = require('./paxfulModel');
+const Transaction = require('./transactionModel');
 const AppError = require('../utils/appError');
 const Account = require('./accountModel');
 
@@ -184,6 +185,12 @@ giftCardSchema.pre('save', async function (next) {
       100000000,
     transactionType: 'outflow',
     createdAt: Date.now(),
+  });
+
+  await Transaction.create({
+    transactionType: 'inflow',
+    amount: this.giftCardValue,
+    accountID: this.accountID,
   });
 
   await currentAccount.save();

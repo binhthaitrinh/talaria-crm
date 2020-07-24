@@ -7,4 +7,9 @@ affiliateRouter
   .get(affiliateControllers.getAllAffiliate)
   .post(affiliateControllers.createAffiliate);
 
+affiliateRouter
+  .route('/:id')
+  .get(affiliateControllers.getOneAffiliate)
+  .patch(affiliateControllers.updateAffiliate);
+
 module.exports = affiliateRouter;

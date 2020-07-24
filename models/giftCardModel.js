@@ -5,42 +5,27 @@ const AppError = require('../utils/appError');
 const Account = require('./accountModel');
 
 const giftCardSchema = mongoose.Schema({
-  giftCardType: {
-    type: String,
-    enum: ['amazon', 'sephora', 'ebay', 'bestbuy', 'costco', 'others'],
-    required: [true, 'Gift card deposit must have a type'],
-  },
-  accountID: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Account',
-    required: [true, 'Gift card deposit must have an account ID'],
-  },
   createdAt: {
     type: Date,
     default: Date.now(),
   },
-  priceInBTC: {
+  priceInBtc: {
     type: mongoose.Decimal128,
     required: [true, 'Gift card deposit must have a price in BTC'],
   },
-  feeBTC: {
+  feeBtc: {
     type: mongoose.Decimal128,
     default: 0.0,
-  },
-  btcUsdRate: {
-    type: mongoose.Decimal128,
-    required: [true, 'Gift card deposit must have exchange rate'],
-  },
-  vndUsdRate: {
-    type: mongoose.Decimal128,
-    default: 23600,
   },
   giftCardValue: {
     type: Number,
     required: [true, 'Gift card deposit must have value'],
   },
-  hardCardPic: String,
-  receiptPic: String,
+  giftCardType: {
+    type: String,
+    enum: ['amazon', 'sephora', 'ebay', 'bestbuy', 'costco', 'others'],
+    required: [true, 'Gift card deposit must have a type'],
+  },
   discountRate: mongoose.Decimal128,
   remainingBalance: mongoose.Decimal128,
   partialBalance: [
@@ -49,6 +34,31 @@ const giftCardSchema = mongoose.Schema({
       remainingBalance: mongoose.Decimal128,
     },
   ],
+  account: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Account',
+    required: [true, 'Gift card deposit must have an account ID'],
+  },
+  btcUsdRate: {
+    type: mongoose.Decimal128,
+    default: 9500,
+  },
+  usdVndRate: {
+    type: mongoose.Decimal128,
+    default: 23700,
+  },
+  hardCardPic: String,
+  receiptPic: String,
+  notes: String,
+});
+
+giftCardSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'account',
+    select: 'balance loginID',
+  });
+
+  next();
 });
 
 giftCardSchema.pre('save', function (next) {
@@ -78,7 +88,7 @@ giftCardSchema.pre('save', async function (next) {
     {
       $project: {
         remainingBalance: 1,
-        moneySpent: 1,
+        // moneySpent: 1,
       },
     },
   ]);
@@ -87,13 +97,17 @@ giftCardSchema.pre('save', async function (next) {
     return next(new AppError('not enough BTC', 400));
   }
 
-  let remainingBtcNeeded = parseFloat(this.priceInBTC);
+  let remainingBtcNeeded =
+    Math.round(
+      parseFloat(this.priceInBtc) * 100000000 +
+        parseFloat(this.feeBtc) * 100000000
+    ) / 100000000;
   let remainingGc = parseFloat(this.giftCardValue);
   const totalBtcNeeded = remainingBtcNeeded;
   const rates = [];
   let index = 0;
 
-  // Keep taking BTC ufrom paxful transaction
+  // Keep taking BTC from paxful transaction
   while (
     index < paxfuls.length &&
     remainingBtcNeeded > parseFloat(paxfuls[index].remainingBalance.amount)
@@ -137,6 +151,7 @@ giftCardSchema.pre('save', async function (next) {
     return next(new AppError('not enought BTC', 400));
   }
 
+  // last paxful transaction to be consumed
   const paxful = paxfuls[index];
   const vndBtcRate = parseFloat(paxful.remainingBalance.rating);
   const vndGcRate =
@@ -167,9 +182,10 @@ giftCardSchema.pre('save', async function (next) {
     }
   );
 
+  // create partiBalance for current gift card
   this.partialBalance = rates;
 
-  const currentAccount = await Account.findById(this.accountID);
+  const currentAccount = await Account.findById(this.account);
 
   if (!currentAccount) return next(new AppError('Account not found', 400));
   const newBalance =
@@ -181,23 +197,22 @@ giftCardSchema.pre('save', async function (next) {
 
   await Paxful.create({
     btcAmount:
-      Math.round(this.priceInBTC * 100000000 + this.feeBTC * 100000000) /
+      Math.round(this.priceInBtc * 100000000 + this.feeBtc * 100000000) /
       100000000,
     transactionType: 'outflow',
-    createdAt: Date.now(),
   });
 
   await Transaction.create({
     transactionType: 'inflow',
     amount: this.giftCardValue,
-    accountID: this.accountID,
+    accountID: this.account,
   });
 
   await currentAccount.save();
   await Promise.all(paxfuls);
 
-  // let remaining = parseFloat(this.priceInBTC);
-  // const total = parseFloat(this.priceInBTC);
+  // let remaining = parseFloat(this.priceInBtc);
+  // const total = parseFloat(this.priceInBtc);
   // let index = 0;
   // let paxful;
 

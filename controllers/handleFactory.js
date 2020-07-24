@@ -25,7 +25,7 @@ exports.getAll = (Model) => {
     // EXECUTE QUERY
     const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
-      .sort()
+      .sort('-createdAt')
       .limitFields()
       .paginate();
     const doc = await features.query;

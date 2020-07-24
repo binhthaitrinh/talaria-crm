@@ -8,6 +8,9 @@ giftCardRouter
   .post(giftCardControllers.createGiftCard)
   .get(giftCardControllers.getAllGiftCard);
 
-giftCardRouter.route('/:id').patch(giftCardControllers.updateGiftCard);
+giftCardRouter
+  .route('/:id')
+  .patch(giftCardControllers.updateGiftCard)
+  .get(giftCardControllers.getOneGiftCard);
 
 module.exports = giftCardRouter;

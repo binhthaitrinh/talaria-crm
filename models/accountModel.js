@@ -5,7 +5,7 @@ const accountSchema = mongoose.Schema(
   {
     accountWebsite: {
       type: String,
-      enun: [
+      enum: [
         'amazon',
         'sephora',
         'ebay',

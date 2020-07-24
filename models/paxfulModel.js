@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
-const btcTransactionModel = require('./btcTransactionModel');
+const btcAccount = require('./btcAccountModel');
 
 const paxfulSchema = mongoose.Schema(
   {
@@ -11,6 +11,11 @@ const paxfulSchema = mongoose.Schema(
     btcAmount: {
       type: mongoose.Decimal128,
       required: [true, 'A Paxful deposit must have an amount'],
+      min: [0, 'BTC amount cannot be negative'],
+    },
+    withdrawFee: {
+      type: mongoose.Decimal128,
+      default: 0,
     },
     usdVndRate: {
       type: mongoose.Decimal128,
@@ -18,30 +23,20 @@ const paxfulSchema = mongoose.Schema(
     },
     btcUsdRate: {
       type: mongoose.Decimal128,
+      default: 9500,
     },
-    withdrawFee: {
-      type: mongoose.Decimal128,
-      default: 0,
-      currency: {
-        type: String,
-        enum: ['vnd', 'usd'],
-      },
-    },
-    buyer: {
-      type: String,
-    },
-    pocketMoney: Boolean,
-    notes: String,
     moneySpent: {
       amount: {
         type: mongoose.Decimal128,
-        // required: [true, 'A Paxful deposit must list how much money spent'],
       },
       currency: {
         type: String,
         enum: ['vnd', 'usd'],
         default: 'vnd',
       },
+    },
+    buyer: {
+      type: String,
     },
     remainingBalance: {
       amount: {
@@ -51,14 +46,21 @@ const paxfulSchema = mongoose.Schema(
         type: mongoose.Decimal128,
       },
     },
+    totalBalance: {
+      type: mongoose.Decimal128,
+    },
+    btcAccount: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'btcAccount',
+      required: [true, 'A paxful transaction must have a BTC account'],
+    },
     transactionType: {
       type: String,
       enum: ['inflow', 'outflow'],
       required: [true, 'A paxful transaction must have a type'],
     },
-    totalBalance: {
-      type: mongoose.Decimal128,
-    },
+    pocketMoney: Boolean,
+    notes: String,
   },
   {
     // to include virtual properties into results
@@ -132,45 +134,49 @@ paxfulSchema.pre(/find/, function (next) {
 });
 
 paxfulSchema.pre('save', async function (next) {
-  if (parseFloat(this.btcAmount) <= 0) {
-    return next(new AppError('Deposit BTC amount must be positive', 400));
+  if (this.transactionType === 'inflow') {
+    // convert to VND if currency is in USD
+    if (this.moneySpent.currency === 'usd') {
+      this.moneySpent.amount =
+        Math.round(this.moneySpent.amount * 100 * this.usdVndRate * 100) /
+        10000;
+      this.moneySpent.currency = 'vnd';
+    }
+
+    // when created, remainingBalance = btcAmount
+    this.remainingBalance.amount = parseFloat(this.btcAmount);
+
+    // calculate btcVnd rating of this transaction
+    this.remainingBalance.rating =
+      Math.round(
+        ((parseFloat(this.moneySpent.amount) * 100000000) /
+          (parseFloat(this.btcAmount) * 100000000 +
+            parseFloat(this.withdrawFee) * 100000000)) *
+          100000000
+      ) / 100000000;
   }
 
-  if (this.moneySpent.currency === 'usd') {
-    this.moneySpent.amount =
-      Math.round(this.moneySpent.amount * 100 * this.usdVndRate * 100) / 10000;
-    this.moneySpent.currency = 'vnd';
-  }
-  this.remainingBalance.amount = parseFloat(this.btcAmount);
-
-  this.remainingBalance.rating =
-    Math.round(
-      ((parseFloat(this.moneySpent.amount) * 100000000) /
-        (parseFloat(this.btcAmount) * 100000000 +
-          parseFloat(this.withdrawFee) * 100000000)) *
-        100000000
-    ) / 100000000;
-
-  const previous = await this.constructor.find().limit(1);
-
-  if (previous.length === 0) {
-    this.totalBalance = this.btcAmount;
-    return next();
-  }
+  const account = await btcAccount.findById(this.btcAccount);
 
   if (this.transactionType === 'inflow') {
-    this.totalBalance =
+    account.balance =
       Math.round(
-        parseFloat(previous[0].totalBalance) * 100000000 +
+        parseFloat(account.balance) * 100000000 +
           parseFloat(this.btcAmount) * 100000000
       ) / 100000000;
   } else if (this.transactionType === 'outflow') {
-    this.totalBalance =
+    account.balance =
       Math.round(
-        parseFloat(previous[0].totalBalance) * 100000000 -
+        parseFloat(account.balance) * 100000000 -
           parseFloat(this.btcAmount) * 100000000
       ) / 100000000;
   }
+
+  this.totalBalance = account.balance;
+
+  await account.save();
+
+  this.createdAt = Date.now();
 
   next();
 });

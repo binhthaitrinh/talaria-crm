@@ -25,6 +25,10 @@ const affiliateSchema = mongoose.Schema({
       bankName: String,
     },
   ],
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
   notes: String,
 });
 

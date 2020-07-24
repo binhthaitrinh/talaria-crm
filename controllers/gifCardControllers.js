@@ -6,3 +6,5 @@ exports.createGiftCard = factory.createOne(giftCardModel);
 exports.getAllGiftCard = factory.getAll(giftCardModel);
 
 exports.updateGiftCard = factory.updateOne(giftCardModel);
+
+exports.getOneGiftCard = factory.getOne(giftCardModel);

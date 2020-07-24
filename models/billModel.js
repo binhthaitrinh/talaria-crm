@@ -1,17 +1,12 @@
 const mongoose = require('mongoose');
-const AppError = require('../utils/appError');
 const Transaction = require('./transactionModel');
 const Item = require('./itemModel');
 const Customer = require('./customerModel');
 
 const billSchema = mongoose.Schema({
-  date: {
+  createdAt: {
     type: Date,
     default: Date.now(),
-  },
-  affiliate: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Affiliate',
   },
   items: [
     {
@@ -19,39 +14,57 @@ const billSchema = mongoose.Schema({
       ref: 'Item',
     },
   ],
-  totalBillInUsd: mongoose.Decimal128,
-  vndUsdRate: mongoose.Decimal128,
+  vndUsdRate: {
+    type: mongoose.Decimal128,
+    required: [true, 'A bill must have usd/vnd rate'],
+  },
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Customer',
+    required: [true, 'A bill must belong to a customer'],
+  },
+  affiliate: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Affiliate',
+    required: [true, 'A bill must have an affiliate'],
+  },
   status: {
     type: String,
     enum: ['not-paid', 'partially-paid', 'fully-paid'],
     default: 'not-paid',
   },
+
   estimatedWeight: mongoose.Decimal128,
-  moneyReceived: {
-    type: mongoose.Decimal128,
-    default: 0,
-  },
-  remaining: mongoose.Decimal128,
-  moneyChargeCustomerUSD: mongoose.Decimal128,
-  moneyChargeCustomerVND: mongoose.Decimal128,
   shippingRateToVnInUSD: {
     type: mongoose.Decimal128,
     default: 12.5,
   },
-
   shippingFeeToVnInUSD: mongoose.Decimal128,
-  moneyTransferReceipt: String,
-  customer: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Customer',
+
+  taxForCustomer: {
+    type: mongoose.Decimal128,
+    default: 0.0,
+    min: [0, 'Tax cannot be negative'],
+    max: [1, 'Tax cannot be more than 100%'],
   },
-  actualCost: mongoose.Decimal128,
-  profit: mongoose.Decimal128,
+  // moneyReceived: {
+  //   type: mongoose.Decimal128,
+  //   default: 0,
+  // },
+  remaining: mongoose.Decimal128,
+  totalBillInUsd: mongoose.Decimal128,
+  moneyChargeCustomerUSD: mongoose.Decimal128,
+  // moneyChargeCustomerVND: mongoose.Decimal128,
+
+  moneyTransferReceipt: String,
+
+  // actualCost: mongoose.Decimal128,
 });
 
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'customer',
+    select: 'customerName customerType',
   });
 
   next();
@@ -60,7 +73,16 @@ billSchema.pre(/^find/, function (next) {
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'items',
-    select: 'name pricePerItem quantity -orderAccount',
+    select: 'name quantity -orderAccount',
+  });
+
+  next();
+});
+
+billSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'affiliate',
+    select: 'name',
   });
 
   next();
@@ -98,7 +120,7 @@ billSchema.pre('save', async function (next) {
               },
               {
                 $multiply: [
-                  '$taxForCustomer',
+                  this.taxForCustomer,
                   {
                     $add: [
                       '$usShippingFee',
@@ -121,7 +143,7 @@ billSchema.pre('save', async function (next) {
                   '$pricePerItem',
                   '$quantity',
                   {
-                    $add: [1, '$taxForCustomer'],
+                    $add: [1, this.taxForCustomer],
                   },
                 ],
               },
@@ -155,11 +177,14 @@ billSchema.pre('save', async function (next) {
         parseFloat(result[0].totalBillCost) * 100000000
     ) / 100000000;
 
-  this.moneyChargeCustomerVND =
+  // this.moneyChargeCustomerVND =
+  //   Math.round(this.vndUsdRate * (100000000 * this.moneyChargeCustomerUSD)) /
+  //   100000000;
+
+  this.remaining =
     Math.round(this.vndUsdRate * (100000000 * this.moneyChargeCustomerUSD)) /
     100000000;
-
-  this.remaining = this.moneyChargeCustomerVND;
+  this.createdAt = Date.now();
 
   next();
 });
@@ -170,8 +195,8 @@ billSchema.statics.customerPay = async function (id, amount) {
     'moneyReceived remaining -items -customer'
   );
 
-  // update amountPaid
-  const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
+  // // update amountPaid
+  // const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
 
   // update remaining
   const remaining =
@@ -183,7 +208,7 @@ billSchema.statics.customerPay = async function (id, amount) {
     { _id: id },
     {
       $set: {
-        moneyReceived,
+        // moneyReceived,
         remaining,
         status: remaining > 0 ? 'partially-paid' : 'fully-paid',
       },

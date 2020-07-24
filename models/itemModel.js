@@ -28,39 +28,31 @@ const itemSchema = mongoose.Schema(
       default: 'not-yet-ordered',
     },
     pricePerItem: {
-      type: Number,
+      type: mongoose.Decimal128,
       required: [true, 'An Item must have a price'],
+      min: [0, 'Price cannot be negative'],
     },
     tax: {
       type: mongoose.Decimal128,
       default: 0.0,
-    },
-    taxForCustomer: {
-      type: mongoose.Decimal128,
-      default: 0.0875,
       min: [0, 'Tax must not be negative'],
-      max: [1, 'Tax cannot be larger than 1'],
+      max: [1, 'Tax cannot be larger then 100%'],
     },
     usShippingFee: {
       type: mongoose.Decimal128,
       default: 0.0,
+      min: [0, 'Shipping Fee cannot be negative'],
     },
-    // shippingToVNFee: {
-    //   type: mongoose.Decimal128,
-    //   default: 10.0,
-    // },
     estimatedWeight: {
       type: mongoose.Decimal128,
       default: 0.0,
+      min: [0, 'Weight cannot be negative'],
     },
     actualWeight: {
       type: mongoose.Decimal128,
       default: 0.0,
+      min: [0, 'Weight cannot be negative'],
     },
-    // usVnRate: {
-    //   type: Number,
-    //   default: 23000,
-    // },
 
     // actual gc cost, exclude shipping to VN fee
     // update only after charge
@@ -75,7 +67,15 @@ const itemSchema = mongoose.Schema(
     trackingLink: String,
     orderedWebsite: {
       type: String,
-      enum: ['amazon', 'ebay', 'sephora', 'bestbuy', 'costco', 'walmart'],
+      enum: [
+        'amazon',
+        'ebay',
+        'sephora',
+        'bestbuy',
+        'costco',
+        'walmart',
+        'others',
+      ],
       default: 'amazon',
     },
     invoiceLink: String,
@@ -128,6 +128,8 @@ itemSchema.pre(/^find/, function (next) {
 itemSchema.statics.createTransaction = async function (id) {
   // query and calculate total gift card cost
   // get account balance
+
+  console.log(id);
   const item = await this.aggregate([
     {
       $match: { _id: mongoose.Types.ObjectId(id) },

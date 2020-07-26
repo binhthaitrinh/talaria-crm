@@ -18,7 +18,10 @@ const affiliateSchema = mongoose.Schema({
   commissionRate: {
     type: mongoose.Decimal128,
     default: 0,
+    min: [0, 'Commission Rate must be positive'],
+    max: [1, 'Commission Rate cannot be more than 100%'],
   },
+
   bankAccounts: [
     {
       accountNumber: String,

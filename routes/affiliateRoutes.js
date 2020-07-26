@@ -12,4 +12,6 @@ affiliateRouter
   .get(affiliateControllers.getOneAffiliate)
   .patch(affiliateControllers.updateAffiliate);
 
+affiliateRouter.get('/:id/commission', affiliateControllers.calcCommission);
+
 module.exports = affiliateRouter;

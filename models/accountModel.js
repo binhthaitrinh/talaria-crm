@@ -22,10 +22,10 @@ const accountSchema = mongoose.Schema(
     },
     teamviewInfo: String,
     balance: {
-      type: Number,
+      type: mongoose.Decimal128,
       default: 0.1,
     },
-    addedAt: {
+    createdAt: {
       type: Date,
       default: Date.now(),
     },

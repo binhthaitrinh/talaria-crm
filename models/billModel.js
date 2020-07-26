@@ -14,7 +14,7 @@ const billSchema = mongoose.Schema({
       ref: 'Item',
     },
   ],
-  vndUsdRate: {
+  usdVndRate: {
     type: mongoose.Decimal128,
     required: [true, 'A bill must have usd/vnd rate'],
   },
@@ -39,7 +39,6 @@ const billSchema = mongoose.Schema({
     type: mongoose.Decimal128,
     default: 12.5,
   },
-  shippingFeeToVnInUSD: mongoose.Decimal128,
 
   taxForCustomer: {
     type: mongoose.Decimal128,
@@ -47,12 +46,12 @@ const billSchema = mongoose.Schema({
     min: [0, 'Tax cannot be negative'],
     max: [1, 'Tax cannot be more than 100%'],
   },
-  // moneyReceived: {
-  //   type: mongoose.Decimal128,
-  //   default: 0,
-  // },
+  moneyReceived: {
+    type: mongoose.Decimal128,
+    default: 0,
+  },
   remaining: mongoose.Decimal128,
-  totalBillInUsd: mongoose.Decimal128,
+  actualBillCost: mongoose.Decimal128,
   moneyChargeCustomerUSD: mongoose.Decimal128,
   // moneyChargeCustomerVND: mongoose.Decimal128,
 
@@ -115,7 +114,7 @@ billSchema.pre('save', async function (next) {
                 $multiply: [
                   '$pricePerItem',
                   '$quantity',
-                  (100 - customer.discountRate) / 100,
+                  1 - customer.discountRate,
                 ],
               },
               {
@@ -158,7 +157,7 @@ billSchema.pre('save', async function (next) {
   this.estimatedWeight = result[0].totalEstimatedWeight;
 
   // calculate shipping fee to VN
-  this.shippingFeeToVnInUSD =
+  const shippingFeeToVnInUSD =
     Math.round(
       parseFloat(this.estimatedWeight) * 100 * 10 * this.shippingRateToVnInUSD
     ) / 1000;
@@ -166,25 +165,24 @@ billSchema.pre('save', async function (next) {
   // calculate money to charge customer (include shipping fee)
   this.moneyChargeCustomerUSD =
     Math.round(
-      this.shippingFeeToVnInUSD * 100000000 +
+      shippingFeeToVnInUSD * 100000000 +
         parseFloat(result[0].moneyChargeCustomerUSD) * 100000000
     ) / 100000000;
 
   // calculate total gift card money + shipping fee to VN
-  this.totalBillInUsd =
+  this.actualBillCost =
     Math.round(
-      this.shippingFeeToVnInUSD * 100000000 +
+      shippingFeeToVnInUSD * 100000000 +
         parseFloat(result[0].totalBillCost) * 100000000
     ) / 100000000;
 
   // this.moneyChargeCustomerVND =
-  //   Math.round(this.vndUsdRate * (100000000 * this.moneyChargeCustomerUSD)) /
+  //   Math.round(this.usdVndRate * (100000000 * this.moneyChargeCustomerUSD)) /
   //   100000000;
 
   this.remaining =
-    Math.round(this.vndUsdRate * (100000000 * this.moneyChargeCustomerUSD)) /
+    Math.round(this.usdVndRate * (100000000 * this.moneyChargeCustomerUSD)) /
     100000000;
-  this.createdAt = Date.now();
 
   next();
 });
@@ -204,6 +202,12 @@ billSchema.statics.customerPay = async function (id, amount) {
       parseFloat(bill.remaining) * 100000000 - parseFloat(amount) * 100000000
     ) / 100000000;
 
+  const moneyReceived =
+    Math.round(
+      parseFloat(bill.moneyReceived) * 100000000 +
+        parseFloat(amount) * 100000000
+    ) / 100000000;
+
   await this.updateOne(
     { _id: id },
     {
@@ -211,6 +215,7 @@ billSchema.statics.customerPay = async function (id, amount) {
         // moneyReceived,
         remaining,
         status: remaining > 0 ? 'partially-paid' : 'fully-paid',
+        moneyReceived,
       },
     }
   );

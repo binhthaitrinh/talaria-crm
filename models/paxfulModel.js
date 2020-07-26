@@ -133,6 +133,15 @@ paxfulSchema.pre(/find/, function (next) {
   next();
 });
 
+paxfulSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'btcAccount',
+    select: 'balance',
+  });
+
+  next();
+});
+
 paxfulSchema.pre('save', async function (next) {
   if (this.transactionType === 'inflow') {
     // convert to VND if currency is in USD
@@ -150,7 +159,7 @@ paxfulSchema.pre('save', async function (next) {
     this.remainingBalance.rating =
       Math.round(
         ((parseFloat(this.moneySpent.amount) * 100000000) /
-          (parseFloat(this.btcAmount) * 100000000 +
+          (parseFloat(this.btcAmount) * 100000000 -
             parseFloat(this.withdrawFee) * 100000000)) *
           100000000
       ) / 100000000;
@@ -175,8 +184,6 @@ paxfulSchema.pre('save', async function (next) {
   this.totalBalance = account.balance;
 
   await account.save();
-
-  this.createdAt = Date.now();
 
   next();
 });

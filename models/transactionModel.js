@@ -41,7 +41,7 @@ transactionSchema.pre(/^find/, function (next) {
 
   this.populate({
     path: 'accountID',
-    select: 'loginID _id',
+    select: 'loginID _id balance',
   });
   next();
 });

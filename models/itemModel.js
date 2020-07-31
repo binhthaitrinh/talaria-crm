@@ -111,6 +111,11 @@ const itemSchema = mongoose.Schema(
     notes: {
       type: String,
     },
+    customId: {
+      type: String,
+      required: [true, 'Item must have a custom ID'],
+      unique: true,
+    },
   },
   {
     toJSON: { virtuals: true },

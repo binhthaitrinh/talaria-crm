@@ -5,16 +5,7 @@ const AppError = require('../utils/appError');
 
 exports.getAllItems = factory.getAll(Item);
 
-exports.createItem = catchAsync(async (req, res, next) => {
-  const item = await Item.create(req.body);
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      data: item,
-    },
-  });
-});
+exports.createItem = factory.createOne(Item, 'itemId');
 
 exports.chargeMoney = catchAsync(async (req, res, next) => {
   const transaction = await Item.createTransaction(req.params.id);

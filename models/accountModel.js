@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+const getNextSequence = require('../utils/getNextSequence');
 
 const accountSchema = mongoose.Schema(
   {
@@ -23,29 +23,17 @@ const accountSchema = mongoose.Schema(
     teamviewInfo: String,
     balance: {
       type: mongoose.Decimal128,
-      default: 0.1,
+      default: 0,
+    },
+    currency: {
+      type: String,
+      enum: ['vnd', 'usd', 'btc'],
+      required: [true, 'An account must have currency'],
     },
     createdAt: {
       type: Date,
       default: Date.now(),
     },
-    //   transactionHistory: [
-    //     {
-    //       transactionType: {
-    //         type: String,
-    //         enum: ['loaded', 'spent'],
-    //         requried: [true, 'A transaction must have a type: loaded or spent'],
-    //       },
-    //       amount: {
-    //         type: mongoose.Decimal128,
-    //         require: [true, 'A transaction must have amount'],
-    //       },
-    //       createdAt: {
-    //         type: Date,
-    //         default: Date.now(),
-    //       },
-    //     },
-    //   ],
     accountType: {
       type: String,
       enum: ['owned', 'borrowed'],
@@ -56,6 +44,10 @@ const accountSchema = mongoose.Schema(
       enum: ['active', 'inactive', 'disputing'],
       default: 'active',
     },
+    customId: {
+      type: String,
+      unique: true,
+    },
   },
   {
     // to include virtual properties into results
@@ -63,6 +55,13 @@ const accountSchema = mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
+
+accountSchema.pre('save', async function (next) {
+  const res = await getNextSequence('account');
+  this.customId = `ACCOUNT-${res}`;
+
+  next();
+});
 
 accountSchema.virtual('transactions', {
   ref: 'Transaction',

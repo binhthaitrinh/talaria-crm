@@ -39,7 +39,7 @@ const status = [
 //     quantity: 4,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 //     shippingToVNFee: 10.0,
 
 //     orderedDate: new Date('May 26, 2020 03:24:00'),
@@ -66,7 +66,7 @@ const status = [
 //     quantity: 5,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 //     shippingToVNFee: 10.0,
 
 //     orderedDate: new Date('May 26, 2020 03:24:00'),
@@ -94,7 +94,7 @@ const status = [
 //     quantity: 2,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -123,7 +123,7 @@ const status = [
 //     quantity: 2,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -152,7 +152,7 @@ const status = [
 //     quantity: 10,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -181,7 +181,7 @@ const status = [
 //     quantity: 1,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -210,7 +210,7 @@ const status = [
 //     quantity: 2,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -239,7 +239,7 @@ const status = [
 //     quantity: 1,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -268,7 +268,7 @@ const status = [
 //     quantity: 2,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -298,7 +298,7 @@ const status = [
 //     quantity: 2,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -327,7 +327,7 @@ const status = [
 //     quantity: 1,
 //     orderedWebsite: orderWebsites[0],
 //     invoiceLink: '',
-//     orderAccount: '5ecef412c697ac79087b4cfb',
+//
 
 //     shippingToVNFee: 10.0,
 
@@ -615,10 +615,7 @@ const items = [
     estimatedWeight: 0.34,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -635,10 +632,7 @@ const items = [
     estimatedWeight: 0.02,
     actualWeight: 0.02,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -655,10 +649,7 @@ const items = [
     estimatedWeight: 0.03,
     actualWeight: 0.1,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -675,10 +666,7 @@ const items = [
     estimatedWeight: 0.2,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -696,10 +684,7 @@ const items = [
     estimatedWeight: 14.4,
     actualWeight: 14.4,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -716,10 +701,7 @@ const items = [
     estimatedWeight: 0.5,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -736,10 +718,7 @@ const items = [
     estimatedWeight: 1.5,
     actualWeight: 1.5,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -756,10 +735,7 @@ const items = [
     estimatedWeight: 0.02,
     actualWeight: 0.03,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -776,10 +752,7 @@ const items = [
     estimatedWeight: 1.5,
     actualWeight: 1.5,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },
@@ -796,10 +769,7 @@ const items = [
     estimatedWeight: 0.2,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
-    orderAccount: '5ecef412c697ac79087b4cfb',
-    usVnRate: 23000,
 
-    orderedDate: '2020-05-26T10:24:00.000Z',
     type: 'others',
     notes: '',
   },

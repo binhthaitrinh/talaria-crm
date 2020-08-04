@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
-const btcAccount = require('./btcAccountModel');
+const Account = require('../models/accountModel');
+const getNextSequence = require('../utils/getNextSequence');
 
 const paxfulSchema = mongoose.Schema(
   {
@@ -51,7 +52,7 @@ const paxfulSchema = mongoose.Schema(
     },
     btcAccount: {
       type: mongoose.Schema.ObjectId,
-      ref: 'btcAccount',
+      ref: 'Account',
       required: [true, 'A paxful transaction must have a BTC account'],
     },
     transactionType: {
@@ -61,6 +62,10 @@ const paxfulSchema = mongoose.Schema(
     },
     pocketMoney: Boolean,
     notes: String,
+    customId: {
+      type: String,
+      unique: true,
+    },
   },
   {
     // to include virtual properties into results
@@ -127,17 +132,24 @@ const paxfulSchema = mongoose.Schema(
 //   await this.r.constructor.calcTotalBalance();
 // });
 
-paxfulSchema.pre(/find/, function (next) {
-  this.sort({ createdAt: -1 });
+// paxfulSchema.pre(/find/, function (next) {
+//   this.sort({ createdAt: -1 });
 
-  next();
-});
+//   next();
+// });
 
 paxfulSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'btcAccount',
     select: 'balance',
   });
+
+  next();
+});
+
+paxfulSchema.pre('save', async function (next) {
+  const res = await getNextSequence('paxful');
+  this.customId = `PAXFUL-TRANS-${res}`;
 
   next();
 });
@@ -165,25 +177,47 @@ paxfulSchema.pre('save', async function (next) {
       ) / 100000000;
   }
 
-  const account = await btcAccount.findById(this.btcAccount);
+  // update BTC account balance
+  const btcAccount = await Account.findOneAndUpdate(
+    { _id: this.btcAccount },
+    {
+      $inc: {
+        balance: this.btcAmount * (this.transactionType === 'inflow' ? 1 : -1),
+      },
+    }
+  );
 
+  // update VND account balance
   if (this.transactionType === 'inflow') {
-    account.balance =
-      Math.round(
-        parseFloat(account.balance) * 100000000 +
-          parseFloat(this.btcAmount) * 100000000
-      ) / 100000000;
-  } else if (this.transactionType === 'outflow') {
-    account.balance =
-      Math.round(
-        parseFloat(account.balance) * 100000000 -
-          parseFloat(this.btcAmount) * 100000000
-      ) / 100000000;
+    const vndAccount = await Account.findOneAndUpdate(
+      { loginID: 'VND_ACCOUNT' },
+      {
+        $inc: {
+          balance: this.moneySpent.amount * -1,
+        },
+      }
+    );
   }
 
-  this.totalBalance = account.balance;
+  // const btcAccount = await Account.findById(this.btcAccount);
 
-  await account.save();
+  // if (this.transactionType === 'inflow') {
+  //   btcAccount.balance =
+  //     Math.round(
+  //       parseFloat(btcAccount.balance) * 100000000 +
+  //         parseFloat(this.btcAmount) * 100000000
+  //     ) / 100000000;
+  // } else if (this.transactionType === 'outflow') {
+  //   btcAccount.balance =
+  //     Math.round(
+  //       parseFloat(btcAccount.balance) * 100000000 -
+  //         parseFloat(this.btcAmount) * 100000000
+  //     ) / 100000000;
+  // }
+
+  this.totalBalance = btcAccount.balance;
+
+  // await btcAccount.save();
 
   next();
 });

@@ -48,7 +48,16 @@ const giftcards = JSON.parse(
 const importData = async () => {
   try {
     if (process.argv[3] === '--item') {
-      await Item.create(items);
+      await Item.create(items[0]);
+      await Item.create(items[1]);
+      await Item.create(items[2]);
+      await Item.create(items[3]);
+      await Item.create(items[4]);
+      await Item.create(items[5]);
+      await Item.create(items[6]);
+      await Item.create(items[7]);
+      await Item.create(items[8]);
+      await Item.create(items[9]);
       console.log('Data successfully loaded');
     } else if (process.argv[3] === '--account') {
       await Account.create(accounts);

@@ -3,6 +3,8 @@ const express = require('express');
 const billRouter = express.Router({ mergeParams: true });
 const billControllers = require('../controllers/billControllers');
 
+billRouter.patch('/:id/updatePrice', billControllers.updatePrice);
+
 billRouter
   .route('/:id')
   .get(billControllers.getBill)

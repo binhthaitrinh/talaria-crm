@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const getNextSequence = require('../utils/getNextSequence');
 
 const affiliateSchema = mongoose.Schema({
   name: {
@@ -33,6 +34,17 @@ const affiliateSchema = mongoose.Schema({
     default: Date.now(),
   },
   notes: String,
+  customId: {
+    type: String,
+    unique: true,
+  },
+});
+
+affiliateSchema.pre('save', async function (next) {
+  const res = await getNextSequence('affiliate');
+  this.customId = `AFFILIATE-${res}`;
+
+  next();
 });
 
 const affiliateModel = mongoose.model('Affiliate', affiliateSchema);

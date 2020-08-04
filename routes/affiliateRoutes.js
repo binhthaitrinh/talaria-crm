@@ -2,6 +2,8 @@ const express = require('express');
 const affiliateControllers = require('../controllers/affiliateControllers');
 const affiliateRouter = express.Router();
 
+affiliateRouter.patch('/:id/:year/:month', affiliateControllers.payCommission);
+
 affiliateRouter
   .route('/')
   .get(affiliateControllers.getAllAffiliate)

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const getNextSequence = require('../utils/getNextSequence');
 
 const customerSchema = mongoose.Schema(
   {
@@ -39,6 +40,10 @@ const customerSchema = mongoose.Schema(
       default: Date.now(),
     },
     dateOfBirth: Date,
+    customId: {
+      type: String,
+      unique: true,
+    },
   },
   {
     // to include virtual properties into results
@@ -51,6 +56,13 @@ customerSchema.virtual('transactions', {
   ref: 'Bill',
   foreignField: 'customer',
   localField: '_id',
+});
+
+customerSchema.pre('save', async function (next) {
+  const res = await getNextSequence('customer');
+  this.customId = `CUSTOMER-${res}`;
+
+  next();
 });
 
 const customerModel = mongoose.model('Customer', customerSchema);

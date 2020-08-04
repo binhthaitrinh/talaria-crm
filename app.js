@@ -15,6 +15,7 @@ const billRouter = require('./routes/billRoutes');
 const manageRouter = require('./routes/manageRoutes');
 const btcAccountRouter = require('./routes/btcAccountRoutes');
 const counterRouter = require('./routes/counterRoutes');
+const compensationRouter = require('./routes/compensationRoutes');
 
 const globalErrorHandler = require('./controllers/errorController');
 const AppError = require('./utils/appError');
@@ -59,6 +60,7 @@ app.use('/api/v1/bills', billRouter);
 app.use('/api/v1/manage', manageRouter);
 app.use('/api/v1/btcAccounts', btcAccountRouter);
 app.use('/api/v1/counters', counterRouter);
+app.use('/api/v1/compensations', compensationRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

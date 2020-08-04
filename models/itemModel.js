@@ -3,6 +3,8 @@ const Transaction = require('./transactionModel');
 const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');
 const Account = require('./accountModel');
+const getNextSequence = require('../utils/getNextSequence');
+const catchAsync = require('../utils/catchAsync');
 
 const MUL = 100000000;
 
@@ -113,7 +115,6 @@ const itemSchema = mongoose.Schema(
     },
     customId: {
       type: String,
-      required: [true, 'Item must have a custom ID'],
       unique: true,
     },
   },
@@ -128,6 +129,13 @@ itemSchema.pre(/^find/, function (next) {
     path: 'orderAccount',
     select: 'balance loginID',
   });
+
+  next();
+});
+
+itemSchema.pre('save', async function (next) {
+  const res = await getNextSequence('item');
+  this.customId = `ITEM-${res}`;
 
   next();
 });
@@ -187,10 +195,12 @@ itemSchema.statics.createTransaction = async function (id) {
 
   console.log(item);
 
+  // check status
   if (item[0].status !== 'not-yet-ordered') {
     return new AppError('Item already ordered', 400);
   }
 
+  // check orderAccount with associated account
   if (
     item[0].orderedWebsite.toLowerCase() !==
     item[0].orderAccountInfo.accountWebsite.toLowerCase()
@@ -244,13 +254,14 @@ itemSchema.statics.createTransaction = async function (id) {
   let currentGcBal = parseFloat(giftcards[0].remainingBalance);
   const giftCardPromises = [];
 
+  // for giftcards that will be exhausted completely
   while (index < gcLength && remainingGcNeeded > currentGcBal) {
     let j = 0;
     let currentPartial = giftcards[index].partialBalance[j];
 
     while (
       j < giftcards[index].partialBalance.length &&
-      remainingGcNeeded > currentPartial.remainingBalance
+      remainingGcNeeded > parseFloat(currentPartial.remainingBalance)
     ) {
       const partActualCost =
         Math.round(
@@ -386,6 +397,7 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
+  // update status to ordered & actualCost
   giftCardPromises.push(
     this.updateOne(
       {
@@ -400,6 +412,7 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
+  // update remainingBalance for last giftcard
   giftCardPromises.push(
     GiftCard.updateOne(
       {
@@ -413,14 +426,15 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
+  // update account balance
   giftCardPromises.push(
-    Account.updateOne(
+    Account.findOneAndUpdate(
       {
         _id: item[0].orderAccountInfo._id,
       },
       {
-        $set: {
-          balance: newAccountBal,
+        $inc: {
+          balance: totalGcNeeded * -1,
         },
       }
     )
@@ -430,12 +444,13 @@ itemSchema.statics.createTransaction = async function (id) {
     { itemID: id },
     {
       transactionType: 'outflow',
-      amount: actualCost,
-      accountID: item[0].orderAccountInfo._id,
-      itemID: item[0]._id,
-      gcCost: parseFloat(item[0].total),
+      amount: totalGcNeeded,
+      account: item[0].orderAccountInfo._id,
+      item: item[0]._id,
+      actualCost,
       createdAt: Date.now(),
       balance: newAccountBal,
+      currency: 'usd',
     },
     { upsert: true, returnNewDocument: true, returnOriginal: false }
   );

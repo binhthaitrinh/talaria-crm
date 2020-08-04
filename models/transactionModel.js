@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const getNextSequence = require('../utils/getNextSequence');
+const Account = require('./accountModel');
 
 const transactionSchema = mongoose.Schema({
   transactionType: {
@@ -10,27 +12,36 @@ const transactionSchema = mongoose.Schema({
     type: mongoose.Decimal128,
     required: [true, 'Transaction must have an amount'],
   },
+  currency: {
+    type: String,
+    enum: ['vnd', 'usd', 'btc'],
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
   },
-  accountID: {
+  account: {
     type: mongoose.Schema.ObjectId,
     ref: 'Account',
     // required: [true, 'Transaction must be associated with an account'],
   },
-  itemID: {
+  item: {
     type: mongoose.Schema.ObjectId,
     ref: 'Item',
     // required: [true, 'Transaction must be associated with an item'],
   },
-  billID: {
+  bill: {
     type: mongoose.Schema.ObjectId,
     ref: 'Bill',
   },
-  gcCost: mongoose.Decimal128,
+  actualCost: mongoose.Decimal128,
   notes: String,
   balance: mongoose.Decimal128,
+  customId: {
+    type: String,
+    unique: true,
+  },
 });
 
 transactionSchema.pre(/^find/, function (next) {
@@ -43,6 +54,13 @@ transactionSchema.pre(/^find/, function (next) {
     path: 'accountID',
     select: 'loginID _id balance',
   });
+  next();
+});
+
+transactionSchema.pre('save', async function (next) {
+  const res = await getNextSequence('transaction');
+  this.customId = `TRANSACTION-${res}`;
+
   next();
 });
 

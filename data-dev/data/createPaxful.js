@@ -14,7 +14,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 1, 5, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.06953014,
@@ -29,7 +29,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 1, 14, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.07718933,
@@ -44,7 +44,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 1, 25, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.00486086,
@@ -59,7 +59,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 11, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.010718,
@@ -74,7 +74,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 20, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.0358775,
@@ -89,7 +89,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 22, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.06976,
@@ -104,7 +104,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 27, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.13801283,
@@ -119,7 +119,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 30, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.02,
@@ -134,7 +134,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 2, 31, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
   {
     btcAmount: 0.05,
@@ -149,7 +149,7 @@ const paxful = [
     },
     createdAt: new Date(2020, 3, 4, 13, 0, 0),
     transactionType: 'inflow',
-    btcAccount: '5f1a64c7af3f082e6f496f67',
+    btcAccount: '5f24af3e03ba3c219abaeb04',
   },
 ];
 

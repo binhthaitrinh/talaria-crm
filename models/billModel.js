@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 const Transaction = require('./transactionModel');
 const Item = require('./itemModel');
 const Customer = require('./customerModel');
+const Account = require('./accountModel');
+const Compensation = require('./compensationModel');
+const AppError = require('../utils/appError');
+const getNextSequence = require('../utils/getNextSequence');
 
 const billSchema = mongoose.Schema({
   createdAt: {
@@ -53,9 +57,14 @@ const billSchema = mongoose.Schema({
   remaining: mongoose.Decimal128,
   actualBillCost: mongoose.Decimal128,
   moneyChargeCustomerUSD: mongoose.Decimal128,
+  actualChargeCustomer: mongoose.Decimal128,
   // moneyChargeCustomerVND: mongoose.Decimal128,
 
   moneyTransferReceipt: String,
+  customId: {
+    type: String,
+    unique: true,
+  },
 
   // actualCost: mongoose.Decimal128,
 });
@@ -81,8 +90,15 @@ billSchema.pre(/^find/, function (next) {
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'affiliate',
-    select: 'name',
+    select: 'name commissionRate',
   });
+
+  next();
+});
+
+billSchema.pre('save', async function (next) {
+  const res = await getNextSequence('bill');
+  this.customId = `BILL-${res}`;
 
   next();
 });
@@ -184,28 +200,37 @@ billSchema.pre('save', async function (next) {
     Math.round(this.usdVndRate * (100000000 * this.moneyChargeCustomerUSD)) /
     100000000;
 
+  this.actualChargeCustomer = this.remaining;
+
   next();
 });
 
 billSchema.statics.customerPay = async function (id, amount) {
   // find the bill doc to be paid
   const bill = await this.findOne({ _id: id }).select(
-    'moneyReceived remaining -items -customer'
+    'moneyReceived remaining actualChargeCustomer status -items -customer'
   );
+
+  console.log(bill);
+
+  if (bill.status === 'fully-paid') {
+    return new AppError('Bill already paid', 400);
+  }
 
   // // update amountPaid
   // const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
-
-  // update remaining
-  const remaining =
-    Math.round(
-      parseFloat(bill.remaining) * 100000000 - parseFloat(amount) * 100000000
-    ) / 100000000;
 
   const moneyReceived =
     Math.round(
       parseFloat(bill.moneyReceived) * 100000000 +
         parseFloat(amount) * 100000000
+    ) / 100000000;
+
+  // update remaining
+  const remaining =
+    Math.round(
+      parseFloat(bill.actualChargeCustomer) * 100000000 -
+        parseFloat(moneyReceived) * 100000000
     ) / 100000000;
 
   await this.updateOne(
@@ -223,8 +248,32 @@ billSchema.statics.customerPay = async function (id, amount) {
   const transaction = await Transaction.create({
     transactionType: 'inflow',
     amount,
-    billID: bill.id,
+    bill: bill.id,
+    currency: 'vnd',
   });
+
+  await Account.findOneAndUpdate(
+    { loginID: 'VND_ACCOUNT' },
+    {
+      $inc: {
+        balance: amount * 1,
+      },
+    }
+  );
+
+  if (remaining <= 0) {
+    await Compensation.create({
+      bill: id,
+      status: 'pending',
+      affiliate: bill.affiliate._id,
+      amount:
+        Math.round(
+          parseFloat(bill.actualChargeCustomer) *
+            100000000 *
+            parseFloat(bill.affiliate.commissionRate)
+        ) / 100000000,
+    });
+  }
 
   // update bill status
   return transaction;

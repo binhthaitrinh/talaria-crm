@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const getNextSequence = require('../utils/getNextSequence');
 
 const btcAccountSchema = mongoose.Schema({
   createdAt: {
@@ -23,6 +24,17 @@ const btcAccountSchema = mongoose.Schema({
     default: 'active',
   },
   notes: String,
+  customId: {
+    type: String,
+    unique: true,
+  },
+});
+
+btcAccountSchema.pre('save', async function (next) {
+  const res = await getNextSequence('btcAccount');
+  this.customId = `BTC-ACCT-${res}`;
+
+  next();
 });
 
 const btcAccountModel = mongoose.model('btcAccount', btcAccountSchema);

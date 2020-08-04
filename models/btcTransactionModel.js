@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const getNextSequence = require('../utils/getNextSequence');
 
 const btcTransactionSchema = mongoose.Schema({
   createdAt: {
@@ -13,6 +14,17 @@ const btcTransactionSchema = mongoose.Schema({
     type: String,
     enum: ['inflow, outflow'],
   },
+  customId: {
+    type: String,
+    unique: true,
+  },
+});
+
+btcTransactionSchema.pre('save', async function (next) {
+  const res = await getNextSequence('btcTransaction');
+  this.customId = `BTC-TRANS-${res}`;
+
+  next();
 });
 
 const btcTransactionModel = mongoose.model(

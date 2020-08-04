@@ -4,6 +4,7 @@ const Transaction = require('./transactionModel');
 const AppError = require('../utils/appError');
 const Account = require('./accountModel');
 const btcAccountModel = require('./btcAccountModel');
+const getNextSequence = require('../utils/getNextSequence');
 
 const MUL = 100000000;
 
@@ -12,13 +13,31 @@ const giftCardSchema = mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-  priceInBtc: {
-    type: mongoose.Decimal128,
-    required: [true, 'Gift card deposit must have a price in BTC'],
+  price: {
+    value: {
+      type: mongoose.Decimal128,
+      required: [true, 'Gift card deposit must have a price'],
+    },
+    currency: {
+      type: String,
+      enum: ['vnd', 'usd', 'btc'],
+      default: 'btc',
+    },
+    // type: mongoose.Decimal128,
+    // required: [true, 'Gift card deposit must have a price in BTC'],
   },
-  feeBtc: {
-    type: mongoose.Decimal128,
-    default: 0.0,
+  fee: {
+    value: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+    },
+    currency: {
+      type: String,
+      enum: ['vnd', 'usd', 'btc'],
+      default: 'btc',
+    },
+    // type: mongoose.Decimal128,
+    // default: 0.0,
   },
   giftCardValue: {
     type: Number,
@@ -53,6 +72,10 @@ const giftCardSchema = mongoose.Schema({
   hardCardPic: String,
   receiptPic: String,
   notes: String,
+  customId: {
+    type: String,
+    unique: true,
+  },
 });
 
 giftCardSchema.pre(/^find/, function (next) {
@@ -66,6 +89,13 @@ giftCardSchema.pre(/^find/, function (next) {
 
 giftCardSchema.pre('save', function (next) {
   this.remainingBalance = this.giftCardValue;
+
+  next();
+});
+
+giftCardSchema.pre('save', async function (next) {
+  const res = await getNextSequence('giftCard');
+  this.customId = `GIFTCARD-${res}`;
 
   next();
 });
@@ -94,6 +124,36 @@ giftCardSchema.pre('save', async function (next) {
   // const paxfuls = await paxfulQuery.exec();
   // console.log(paxfuls);
 
+  if (this.price.currency === 'vnd') {
+    const rates2 = [];
+    const actualCostRate =
+      Math.round(
+        (this.price.value * MUL + this.fee.value * MUL) / this.giftCardValue
+      ) / MUL;
+    const remainingBalance = this.giftCardValue;
+    rates2.push({ actualCostRate, remainingBalance });
+    this.partialBalance = rates2;
+
+    await Account.findOneAndUpdate(
+      { loginID: 'VND_ACCOUNT' },
+      {
+        $inc: {
+          balance: this.price.value * -1,
+        },
+      }
+    );
+
+    await Account.findOneAndUpdate(
+      { _id: this.account },
+      { $inc: { balance: this.giftCardValue * 1 } }
+    );
+
+    return next();
+  }
+
+  // find paxful transactions with remainingBalance > 0,
+  // inflow type
+  // sorted by createdAt ASC, _id ASC
   const paxfuls = await Paxful.aggregate([
     {
       $match: {
@@ -110,17 +170,23 @@ giftCardSchema.pre('save', async function (next) {
       },
     },
     {
-      $project: {
-        remainingBalance: 1,
-        btcAccount: 1,
-      },
-    },
-    {
       $lookup: {
-        from: 'btcaccounts',
+        from: 'accounts',
         localField: 'btcAccount',
         foreignField: '_id',
         as: 'btcAccount',
+      },
+    },
+    {
+      $unwind: {
+        path: '$btcAccount',
+      },
+    },
+    {
+      $project: {
+        'btcAccount.balance': 1,
+        'btcAccount._id': 1,
+        remainingBalance: 1,
       },
     },
   ]);
@@ -131,11 +197,11 @@ giftCardSchema.pre('save', async function (next) {
   }
 
   // save btcAccount into a var
-  const btcAccount = paxfuls[0].btcAccount[0];
-  let btcAccountBalance = parseFloat(btcAccount.balance);
+  const { btcAccount } = paxfuls[0];
+  const btcAccountBalance = parseFloat(btcAccount.balance);
 
   const totalBtcNeeded =
-    Math.round(this.priceInBtc * MUL + this.feeBtc * MUL) / MUL;
+    Math.round(this.price.value * MUL + this.fee.value * MUL) / MUL;
 
   // not enought BTC for this gift card buy
   if (btcAccountBalance < totalBtcNeeded) {
@@ -149,6 +215,7 @@ giftCardSchema.pre('save', async function (next) {
   const paxfulNo = paxfuls.length;
   let curPaxfulBal = parseFloat(paxfuls[0].remainingBalance.amount);
 
+  // for paxful transactions that will be consumed as a whole
   while (index < paxfulNo && remainingBtcNeeded > curPaxfulBal) {
     const curPaxful = paxfuls[index];
     const btcVndRate = parseFloat(curPaxful.remainingBalance.rating);
@@ -183,9 +250,9 @@ giftCardSchema.pre('save', async function (next) {
       }
     );
 
-    btcAccountBalance =
-      Math.round(parseFloat(btcAccountBalance) * MUL - curPaxfulBal * MUL) /
-      MUL;
+    // btcAccountBalance =
+    //   Math.round(parseFloat(btcAccountBalance) * MUL - curPaxfulBal * MUL) /
+    //   MUL;
 
     index += 1;
 
@@ -212,9 +279,9 @@ giftCardSchema.pre('save', async function (next) {
   const remainingBtcInPaxful =
     Math.round(curPaxfulBal * MUL - remainingBtcNeeded * MUL) / MUL;
 
-  btcAccountBalance =
-    Math.round(parseFloat(btcAccountBalance) * MUL - remainingBtcNeeded * MUL) /
-    MUL;
+  // btcAccountBalance =
+  //   Math.round(parseFloat(btcAccountBalance) * MUL - remainingBtcNeeded * MUL) /
+  //   MUL;
 
   paxfuls[index] = Paxful.updateOne(
     { _id: curPaxful._id },
@@ -228,21 +295,29 @@ giftCardSchema.pre('save', async function (next) {
   this.partialBalance = rates;
 
   // update account balance
-  const curAccount = await Account.findById(this.account);
+  await Account.findOneAndUpdate(
+    { _id: this.account },
+    {
+      $inc: {
+        balance: this.giftCardValue * 1,
+      },
+    }
+  );
+  // const curAccount = await Account.findById(this.account);
 
-  const newBalance =
-    Math.round(
-      parseFloat(curAccount.balance) * MUL + this.giftCardValue * MUL
-    ) / MUL;
+  // const newBalance =
+  //   Math.round(
+  //     parseFloat(curAccount.balance) * MUL + this.giftCardValue * MUL
+  //   ) / MUL;
 
-  curAccount.balance = newBalance;
+  // curAccount.balance = newBalance;
 
-  await curAccount.save();
+  // await curAccount.save();
 
   // create a paxful transaction
   await Paxful.create({
-    btcAmount: this.priceInBtc,
-    withdrawFee: this.feeBtc,
+    btcAmount: this.price.value,
+    withdrawFee: this.fee.value,
     transactionType: 'outflow',
     btcAccount: btcAccount._id,
   });
@@ -255,9 +330,14 @@ giftCardSchema.pre('save', async function (next) {
 
   // await btcAccount.save();
   // update btc account
-  await btcAccountModel.findOneAndUpdate(
+  await Account.findOneAndUpdate(
     { _id: btcAccount._id },
-    { $set: { balance: btcAccountBalance } }
+    {
+      $set: {
+        balance:
+          Math.round(btcAccountBalance * MUL - totalBtcNeeded * MUL) / MUL,
+      },
+    }
   );
   await Promise.all(paxfuls);
 

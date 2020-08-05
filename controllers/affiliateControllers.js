@@ -69,9 +69,13 @@ exports.payCommission = catchAsync(async (req, res, next) => {
         status: {
           $eq: 'pending',
         },
+        affiliate: mongoose.Types.ObjectId(req.params.id),
       },
     },
   ]);
+
+  console.log(compensations);
+  console.log(req.params.id);
 
   let totalAmount = 0;
   compensations.forEach((comp) => {
@@ -81,10 +85,19 @@ exports.payCommission = catchAsync(async (req, res, next) => {
       ) / 100000000;
   });
 
-  await Account.findOneAndUpdate(
-    { loginID: 'VND_ACCOUNT' },
-    { $inc: { balance: totalAmount * -1 } }
-  );
+  await Transaction.create({
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
+
+    amountSpent: {
+      value: totalAmount,
+      currency: 'vnd',
+    },
+    amountSpentFee: {
+      value: 0,
+      currency: 'vnd',
+    },
+    affiliate: req.params.id,
+  });
 
   const idList = compensations.map((comp) => comp._id);
 

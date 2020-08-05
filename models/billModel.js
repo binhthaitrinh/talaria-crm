@@ -246,20 +246,22 @@ billSchema.statics.customerPay = async function (id, amount) {
   );
 
   const transaction = await Transaction.create({
-    transactionType: 'inflow',
-    amount,
-    bill: bill.id,
-    currency: 'vnd',
+    toAccount: '5f24a4e06666190fbdf6e7bc',
+    amountReceived: {
+      value: amount,
+      currency: 'vnd',
+    },
+    bill: id,
   });
 
-  await Account.findOneAndUpdate(
-    { loginID: 'VND_ACCOUNT' },
-    {
-      $inc: {
-        balance: amount * 1,
-      },
-    }
-  );
+  // await Account.findOneAndUpdate(
+  //   { loginID: 'VND_ACCOUNT' },
+  //   {
+  //     $inc: {
+  //       balance: amount * 1,
+  //     },
+  //   }
+  // );
 
   if (remaining <= 0) {
     await Compensation.create({

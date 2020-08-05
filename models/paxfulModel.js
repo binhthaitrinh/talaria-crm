@@ -27,9 +27,10 @@ const paxfulSchema = mongoose.Schema(
       type: mongoose.Decimal128,
       default: 9500,
     },
-    moneySpent: {
-      amount: {
+    amountSpent: {
+      value: {
         type: mongoose.Decimal128,
+        required: [true, 'You must have spent money to buy BTC'],
       },
       currency: {
         type: String,
@@ -48,7 +49,7 @@ const paxfulSchema = mongoose.Schema(
         type: mongoose.Decimal128,
       },
     },
-    totalBalance: {
+    btcAccountBalance: {
       type: mongoose.Decimal128,
     },
     btcAccount: {
@@ -56,10 +57,13 @@ const paxfulSchema = mongoose.Schema(
       ref: 'Account',
       required: [true, 'A paxful transaction must have a BTC account'],
     },
-    transactionType: {
-      type: String,
-      enum: ['inflow', 'outflow'],
-      required: [true, 'A paxful transaction must have a type'],
+    fromAccount: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Account',
+      required: [
+        true,
+        'Money spent to buy btc must have come from some where...',
+      ],
     },
     pocketMoney: Boolean,
     notes: String,
@@ -156,91 +160,53 @@ paxfulSchema.pre('save', async function (next) {
 });
 
 paxfulSchema.pre('save', async function (next) {
-  if (this.transactionType === 'inflow') {
-    // convert to VND if currency is in USD
-    if (this.moneySpent.currency === 'usd') {
-      this.moneySpent.amount =
-        Math.round(this.moneySpent.amount * 100 * this.usdVndRate * 100) /
-        10000;
-      this.moneySpent.currency = 'vnd';
-    }
-
-    // when created, remainingBalance = btcAmount
-    this.remainingBalance.amount = parseFloat(this.btcAmount);
-
-    // calculate btcVnd rating of this transaction
-    this.remainingBalance.rating =
-      Math.round(
-        ((parseFloat(this.moneySpent.amount) * 100000000) /
-          (parseFloat(this.btcAmount) * 100000000 -
-            parseFloat(this.withdrawFee) * 100000000)) *
-          100000000
-      ) / 100000000;
+  let trans;
+  try {
+    trans = await Transaction.create({
+      fromAccount: this.fromAccount,
+      toAccount: this.btcAccount,
+      amountSpent: {
+        value: this.amountSpent.value * 1,
+        currency: this.amountSpent.currency,
+      },
+      amountSpentFee: {
+        value: 0,
+        currency: this.amountSpent.currency,
+      },
+      amountReceived: {
+        value: this.btcAmount * 1,
+        currency: 'btc',
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    return next();
   }
 
-  // // update BTC account balance
-  // const btcAccount = await Account.findOneAndUpdate(
-  //   { _id: this.btcAccount },
-  //   {
-  //     $inc: {
-  //       balance: this.btcAmount * (this.transactionType === 'inflow' ? 1 : -1),
-  //     },
-  //   },
-  //   { returnOriginal: false }
-  // );
+  let vndSpent = this.amountSpent.value * 1;
 
-  // update VND account balance
-  // if (this.transactionType === 'inflow') {
-  //   const vndAccount = await Account.findOneAndUpdate(
-  //     { loginID: 'VND_ACCOUNT' },
-  //     {
-  //       $inc: {
-  //         balance: this.moneySpent.amount * -1,
-  //       },
-  //     }
-  //   );
-  // }
+  // convert to VND if currency is in USD
+  if (this.amountSpent.currency === 'usd') {
+    vndSpent =
+      Math.round(this.amountSpent.value * 100 * this.usdVndRate * 100) / 10000;
+  }
 
-  // const btcAccount = await Account.findById(this.btcAccount);
+  // when created, remainingBalance = btcAmount
+  this.remainingBalance.amount = this.btcAmount;
 
-  // if (this.transactionType === 'inflow') {
-  //   btcAccount.balance =
-  //     Math.round(
-  //       parseFloat(btcAccount.balance) * 100000000 +
-  //         parseFloat(this.btcAmount) * 100000000
-  //     ) / 100000000;
-  // } else if (this.transactionType === 'outflow') {
-  //   btcAccount.balance =
-  //     Math.round(
-  //       parseFloat(btcAccount.balance) * 100000000 -
-  //         parseFloat(this.btcAmount) * 100000000
-  //     ) / 100000000;
-  // }
+  // calculate btcVnd rating of this transaction
+  this.remainingBalance.rating =
+    Math.round(
+      ((parseFloat(vndSpent) * 100000000) /
+        (parseFloat(this.btcAmount) * 100000000 -
+          parseFloat(this.withdrawFee) * 100000000)) *
+        100000000
+    ) / 100000000;
 
-  // this.totalBalance = btcAccount.balance;
-
-  // await btcAccount.save();
+  // update account Balance
+  this.btcAccountBalance = trans.toAcctBalance;
 
   next();
-});
-
-paxfulSchema.post('save', async function () {
-  await Transaction.create({
-    fromAccount: '5f24a4e06666190fbdf6e7bc',
-    toAccount: mongoose.Schema.ObjectId(this._id),
-    amountSpent: {
-      value: this.moneySpent.amount * 1,
-      currency: this.moneySpent.currency,
-    },
-    amountSpentFee: {
-      value: 0,
-      currency: this.moneySpent.currency,
-    },
-    amountReceived: {
-      value: this.btcAmount * 1,
-      currency: 'btc',
-    },
-  });
 });
 
 const paxfulModel = mongoose.model('PaxfulDeposit', paxfulSchema);

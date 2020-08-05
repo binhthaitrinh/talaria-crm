@@ -3,7 +3,8 @@ const fs = require('fs');
 const giftcards = [
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.01288026,
     },
@@ -13,7 +14,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.03179557,
     },
@@ -23,7 +25,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.03822025,
     },
@@ -33,7 +36,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.06035217,
     },
@@ -43,7 +47,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.04641182,
     },
@@ -53,7 +58,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.04829563,
     },
@@ -63,7 +69,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.04863814,
     },
@@ -73,7 +80,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.05271416,
     },
@@ -83,7 +91,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.04719327,
     },
@@ -93,7 +102,8 @@ const giftcards = [
   },
   {
     giftCardType: 'amazon',
-    account: '5ecef412c697ac79087b4cfb',
+    fromAccount: '5f24af3e03ba3c219abaeb04',
+    toAccount: '5ecef412c697ac79087b4cfb',
     price: {
       value: 0.05047056,
     },

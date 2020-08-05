@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const getNextSequence = require('../utils/getNextSequence');
 const Account = require('./accountModel');
+const AppError = require('../utils/appError');
 
 const transactionSchema = mongoose.Schema({
   customId: {
@@ -34,10 +35,7 @@ const transactionSchema = mongoose.Schema({
     },
   },
   amountReceived: {
-    value: {
-      type: mongoose.Decimal128,
-      default: 0,
-    },
+    value: mongoose.Decimal128,
     currency: {
       type: String,
       enum: ['vnd', 'btc', 'usd'],
@@ -52,6 +50,10 @@ const transactionSchema = mongoose.Schema({
   bill: {
     type: mongoose.Schema.ObjectId,
     ref: 'Bill',
+  },
+  affiliate: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Affiliate',
   },
   notes: String,
 });
@@ -77,39 +79,57 @@ transactionSchema.pre('save', async function (next) {
 });
 
 transactionSchema.pre('save', async function (next) {
-  console.log(this);
   if (this.fromAccount) {
-    const from = await Account.findOneAndUpdate(
+    console.log('CALLL HERE');
+    try {
+      const from = await Account.findOneAndUpdate(
+        {
+          _id: mongoose.Types.ObjectId(this.fromAccount),
+          currency: this.amountSpent.currency,
+          balance: {
+            $gt:
+              Math.round(
+                this.amountSpent.value * 100000000 +
+                  this.amountSpentFee.value * 100000000
+              ) / 100000000,
+          },
+        },
+        {
+          $inc: {
+            balance:
+              (Math.round(
+                this.amountSpent.value * 100000000 +
+                  this.amountSpentFee.value * 100000000
+              ) /
+                100000000) *
+              -1,
+          },
+        },
+        { returnOriginal: false }
+      );
+      this.fromAcctBalance = from.balance * 1;
+    } catch (err) {
+      return next(new AppError('from account not found', 400));
+    }
+
+    // if (!from) return next(new AppError('from account not found', 400));
+  }
+
+  if (this.toAccount) {
+    const to = await Account.findOneAndUpdate(
       {
-        _id: mongoose.Types.ObjectId(this.fromAccount),
-        currency: this.amountSpent.currency,
+        _id: mongoose.Types.ObjectId(this.toAccount),
+        currency: this.amountReceived.currency,
       },
       {
         $inc: {
-          balance:
-            (Math.round(
-              this.amountSpent.value * 100000000 +
-                this.amountSpentFee.value * 100000000
-            ) /
-              100000000) *
-            -1,
+          balance: this.amountReceived.value * 1,
         },
       },
       { returnOriginal: false }
     );
 
-    this.fromAcctBalance = from.balance;
-  }
-
-  if (this.toAccount) {
-    const to = await Account.findOneAndUpdate(
-      { _id: this.toAccount, currency: this.amountReceived.currency },
-      {
-        $inc: {
-          balance: this.amountReceived.value * 1,
-        },
-      }
-    );
+    if (!to) return next(new AppError('to account not found', 400));
 
     this.toAcctBalance = to.balance;
   }

@@ -91,6 +91,7 @@ const itemSchema = mongoose.Schema(
       type: Date,
       default: Date.now(),
     },
+    orderDate: Date,
     arrivedAtWarehouseDate: {
       type: Date,
     },
@@ -103,6 +104,7 @@ const itemSchema = mongoose.Schema(
     customerRcvedDate: {
       type: Date,
     },
+    returnPkgDate: Date,
     returnPkgArvlDate: {
       type: Date,
     },
@@ -117,6 +119,7 @@ const itemSchema = mongoose.Schema(
       type: String,
       unique: true,
     },
+    fromAcctBalance: mongoose.Decimal128,
   },
   {
     toJSON: { virtuals: true },
@@ -184,7 +187,7 @@ itemSchema.statics.createTransaction = async function (id) {
       $project: {
         _id: 1,
         total: 1,
-        'orderAccountInfo.balance': 1,
+        // 'orderAccountInfo.balance': 1,
         'orderAccountInfo._id': 1,
         'orderAccountInfo.accountWebsite': 1,
         status: 1,
@@ -193,7 +196,9 @@ itemSchema.statics.createTransaction = async function (id) {
     },
   ]);
 
-  console.log(item);
+  if (item.length === 0) {
+    return new AppError('Item not found', 400);
+  }
 
   // check status
   if (item[0].status !== 'not-yet-ordered') {
@@ -208,21 +213,41 @@ itemSchema.statics.createTransaction = async function (id) {
     return new AppError('Oops, Wrong account', 400);
   }
 
-  const totalGcNeeded = parseFloat(item[0].total);
+  let trans;
 
-  if (totalGcNeeded > parseFloat(item[0].orderAccountInfo.balance)) {
-    return new AppError('not enough balance in account', 400);
+  try {
+    trans = await Transaction.create({
+      fromAccount: item[0].orderAccountInfo._id,
+
+      amountSpent: {
+        value: item[0].total * 1,
+        currency: 'usd',
+      },
+      amountSpentFee: {
+        value: 0,
+        currency: 'usd',
+      },
+      item: id,
+    });
+  } catch (err) {
+    return new AppError(err.message, err.statusCode);
   }
 
-  const newAccountBal =
-    parseFloat(item[0].orderAccountInfo.balance) - totalGcNeeded;
+  const totalGcNeeded = parseFloat(item[0].total);
+
+  // if (totalGcNeeded > parseFloat(item[0].orderAccountInfo.balance)) {
+  //   return new AppError('not enough balance in account', 400);
+  // }
+
+  // const newAccountBal =
+  //   parseFloat(item[0].orderAccountInfo.balance) - totalGcNeeded;
 
   // get giftcard to consume
   const giftcards = await GiftCard.aggregate([
     {
       $match: {
         remainingBalance: { $gt: 0 },
-        account: mongoose.Types.ObjectId(item[0].orderAccountInfo._id),
+        toAccount: mongoose.Types.ObjectId(item[0].orderAccountInfo._id),
       },
     },
     {
@@ -407,6 +432,7 @@ itemSchema.statics.createTransaction = async function (id) {
         $set: {
           actualCost,
           status: 'ordered',
+          fromAcctBalance: trans.fromAcctBalance,
         },
       }
     )
@@ -426,19 +452,19 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
-  // update account balance
-  giftCardPromises.push(
-    Account.findOneAndUpdate(
-      {
-        _id: item[0].orderAccountInfo._id,
-      },
-      {
-        $inc: {
-          balance: totalGcNeeded * -1,
-        },
-      }
-    )
-  );
+  // // update account balance
+  // giftCardPromises.push(
+  //   Account.findOneAndUpdate(
+  //     {
+  //       _id: item[0].orderAccountInfo._id,
+  //     },
+  //     {
+  //       $inc: {
+  //         balance: totalGcNeeded * -1,
+  //       },
+  //     }
+  //   )
+  // );
 
   // const transaction = await Transaction.findOneAndUpdate(
   //   { itemID: id },

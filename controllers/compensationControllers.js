@@ -1,6 +1,7 @@
 const Compensation = require('../models/compensationModel');
 const factory = require('./handleFactory');
 const catchAsync = require('../utils/catchAsync');
+const mongoose = require('mongoose');
 
 exports.getCompensations = factory.getAll(Compensation);
 
@@ -26,6 +27,7 @@ exports.getMonthlyCompensations = catchAsync(async (req, res, next) => {
           $gte: new Date(`${year}-${month}-01`),
           $lte: new Date(`${year}-${month}-${getDaysInMonth(month, year)}`),
         },
+        affiliate: mongoose.Types.ObjectId(req.params.id),
       },
     },
   ]);

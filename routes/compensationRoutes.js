@@ -4,7 +4,7 @@ const compensationControllers = require('../controllers/compensationControllers'
 const compensationRouter = express.Router();
 
 compensationRouter.get(
-  '/:year/:month',
+  '/:id/:year/:month',
   compensationControllers.getMonthlyCompensations
 );
 

@@ -8,13 +8,14 @@ const paxful = [
     withdrawFee: 0.00325195,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 10069601,
+    amountSpent: {
+      value: 10069601,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 1, 5, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.06953014,
@@ -23,13 +24,14 @@ const paxful = [
     withdrawFee: 0.00046986,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 16563639,
+    amountSpent: {
+      value: 16563639,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 1, 14, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.07718933,
@@ -38,13 +40,14 @@ const paxful = [
     withdrawFee: 0.0004,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 17944252,
+    amountSpent: {
+      value: 17944252,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 1, 25, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.00486086,
@@ -53,13 +56,14 @@ const paxful = [
     withdrawFee: 0,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 1170983,
+    amountSpent: {
+      value: 1170983,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 11, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.010718,
@@ -68,13 +72,14 @@ const paxful = [
     withdrawFee: 0,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 1589043,
+    amountSpent: {
+      value: 1589043,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 20, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.0358775,
@@ -83,13 +88,14 @@ const paxful = [
     withdrawFee: 0,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 4936320,
+    amountSpent: {
+      value: 4936320,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 22, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.06976,
@@ -98,13 +104,14 @@ const paxful = [
     withdrawFee: 0.00024,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 11133780,
+    amountSpent: {
+      value: 11133780,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 27, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.13801283,
@@ -113,13 +120,14 @@ const paxful = [
     withdrawFee: 0.00024,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 20591942,
+    amountSpent: {
+      value: 20591942,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 30, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.02,
@@ -128,13 +136,14 @@ const paxful = [
     withdrawFee: 0.00024,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 3196054,
+    amountSpent: {
+      value: 3196054,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 2, 31, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
   {
     btcAmount: 0.05,
@@ -143,13 +152,14 @@ const paxful = [
     withdrawFee: 0,
     buyer: 'dat',
     pocketMoney: true,
-    moneySpent: {
-      amount: 8196054,
+    amountSpent: {
+      value: 8196054,
       currency: 'vnd',
     },
     createdAt: new Date(2020, 3, 4, 13, 0, 0),
     transactionType: 'inflow',
     btcAccount: '5f24af3e03ba3c219abaeb04',
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
   },
 ];
 

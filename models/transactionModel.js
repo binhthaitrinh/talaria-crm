@@ -80,7 +80,6 @@ transactionSchema.pre('save', async function (next) {
 
 transactionSchema.pre('save', async function (next) {
   if (this.fromAccount) {
-    console.log('CALLL HERE');
     try {
       const from = await Account.findOneAndUpdate(
         {

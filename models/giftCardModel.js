@@ -50,6 +50,11 @@ const giftCardSchema = mongoose.Schema({
   },
   discountRate: mongoose.Decimal128,
   remainingBalance: mongoose.Decimal128,
+  accountBalance: mongoose.Decimal128,
+  btcAccount: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Account',
+  },
   partialBalance: [
     {
       actualCostRate: mongoose.Decimal128,
@@ -315,12 +320,16 @@ giftCardSchema.pre('save', async function (next) {
   // await curAccount.save();
 
   // create a paxful transaction
-  await Paxful.create({
-    btcAmount: this.price.value,
-    withdrawFee: this.fee.value,
-    transactionType: 'outflow',
-    btcAccount: btcAccount._id,
-  });
+  if (this.price.currency === 'btc') {
+    await Paxful.create({
+      btcAmount: this.price.value,
+      withdrawFee: this.fee.value,
+      transactionType: 'outflow',
+      btcAccount: btcAccount._id,
+      usdVndRate: this.usdVndRate,
+      btcUsdRate: this.btcUsdRate,
+    });
+  }
 
   // await Transaction.create({
   //   transactionType: 'inflow',

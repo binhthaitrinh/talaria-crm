@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/appError');
 const Account = require('../models/accountModel');
+const Transaction = require('../models/transactionModel');
 const getNextSequence = require('../utils/getNextSequence');
 
 const paxfulSchema = mongoose.Schema(
@@ -177,27 +178,28 @@ paxfulSchema.pre('save', async function (next) {
       ) / 100000000;
   }
 
-  // update BTC account balance
-  const btcAccount = await Account.findOneAndUpdate(
-    { _id: this.btcAccount },
-    {
-      $inc: {
-        balance: this.btcAmount * (this.transactionType === 'inflow' ? 1 : -1),
-      },
-    }
-  );
+  // // update BTC account balance
+  // const btcAccount = await Account.findOneAndUpdate(
+  //   { _id: this.btcAccount },
+  //   {
+  //     $inc: {
+  //       balance: this.btcAmount * (this.transactionType === 'inflow' ? 1 : -1),
+  //     },
+  //   },
+  //   { returnOriginal: false }
+  // );
 
   // update VND account balance
-  if (this.transactionType === 'inflow') {
-    const vndAccount = await Account.findOneAndUpdate(
-      { loginID: 'VND_ACCOUNT' },
-      {
-        $inc: {
-          balance: this.moneySpent.amount * -1,
-        },
-      }
-    );
-  }
+  // if (this.transactionType === 'inflow') {
+  //   const vndAccount = await Account.findOneAndUpdate(
+  //     { loginID: 'VND_ACCOUNT' },
+  //     {
+  //       $inc: {
+  //         balance: this.moneySpent.amount * -1,
+  //       },
+  //     }
+  //   );
+  // }
 
   // const btcAccount = await Account.findById(this.btcAccount);
 
@@ -215,11 +217,30 @@ paxfulSchema.pre('save', async function (next) {
   //     ) / 100000000;
   // }
 
-  this.totalBalance = btcAccount.balance;
+  // this.totalBalance = btcAccount.balance;
 
   // await btcAccount.save();
 
   next();
+});
+
+paxfulSchema.post('save', async function () {
+  await Transaction.create({
+    fromAccount: '5f24a4e06666190fbdf6e7bc',
+    toAccount: mongoose.Schema.ObjectId(this._id),
+    amountSpent: {
+      value: this.moneySpent.amount * 1,
+      currency: this.moneySpent.currency,
+    },
+    amountSpentFee: {
+      value: 0,
+      currency: this.moneySpent.currency,
+    },
+    amountReceived: {
+      value: this.btcAmount * 1,
+      currency: 'btc',
+    },
+  });
 });
 
 const paxfulModel = mongoose.model('PaxfulDeposit', paxfulSchema);

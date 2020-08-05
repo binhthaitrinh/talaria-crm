@@ -440,20 +440,20 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
-  const transaction = await Transaction.findOneAndUpdate(
-    { itemID: id },
-    {
-      transactionType: 'outflow',
-      amount: totalGcNeeded,
-      account: item[0].orderAccountInfo._id,
-      item: item[0]._id,
-      actualCost,
-      createdAt: Date.now(),
-      balance: newAccountBal,
-      currency: 'usd',
-    },
-    { upsert: true, returnNewDocument: true, returnOriginal: false }
-  );
+  // const transaction = await Transaction.findOneAndUpdate(
+  //   { itemID: id },
+  //   {
+  //     transactionType: 'outflow',
+  //     amount: totalGcNeeded,
+  //     account: item[0].orderAccountInfo._id,
+  //     item: item[0]._id,
+  //     actualCost,
+  //     createdAt: Date.now(),
+  //     balance: newAccountBal,
+  //     currency: 'usd',
+  //   },
+  //   { upsert: true, returnNewDocument: true, returnOriginal: false }
+  // );
 
   await Promise.all(giftCardPromises);
   // // throw error if account not have enough balance to charge
@@ -723,7 +723,9 @@ itemSchema.statics.createTransaction = async function (id) {
 
   // await Promise.all(giftCardPromises);
 
-  return transaction;
+  return {
+    actualCost,
+  };
 };
 
 const Item = mongoose.model('Item', itemSchema);

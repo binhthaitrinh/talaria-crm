@@ -1,10 +1,9 @@
 const express = require('express');
 const accountControllers = require('../controllers/accountControllers');
-const transactionRouter = require('./transactionRoutes');
 
 const accountRouter = express.Router();
 
-accountRouter.use('/:accountId/transactions', transactionRouter);
+accountRouter.get('/:id/transactions', accountControllers.getTransactions);
 
 accountRouter
   .route('/')

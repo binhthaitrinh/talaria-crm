@@ -61,19 +61,22 @@ const giftCardSchema = mongoose.Schema({
   fromAccount: {
     type: mongoose.Schema.ObjectId,
     ref: 'Account',
+    required: [true, 'A gift card deposit must come from somewhere'],
   },
   toAccount: {
     type: mongoose.Schema.ObjectId,
     ref: 'Account',
-    required: [true, 'Gift card deposit must have an account ID'],
+    required: [true, 'Gift card deposit must be to an account'],
   },
   btcUsdRate: {
     type: mongoose.Decimal128,
     default: 9500,
+    required: [true, 'BTC/USD rate must be input to calc discount rate'],
   },
   usdVndRate: {
     type: mongoose.Decimal128,
     default: 23700,
+    required: [true, 'USD/VND rate must be input to calc discount rate'],
   },
   hardCardPic: String,
   receiptPic: String,
@@ -86,7 +89,16 @@ const giftCardSchema = mongoose.Schema({
 
 giftCardSchema.pre(/^find/, function (next) {
   this.populate({
-    path: 'account',
+    path: 'toAccount',
+    select: 'balance loginID',
+  });
+
+  next();
+});
+
+giftCardSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'fromAccount',
     select: 'balance loginID',
   });
 
@@ -95,13 +107,6 @@ giftCardSchema.pre(/^find/, function (next) {
 
 giftCardSchema.pre('save', function (next) {
   this.remainingBalance = this.giftCardValue;
-
-  next();
-});
-
-giftCardSchema.pre('save', async function (next) {
-  const res = await getNextSequence('giftCard');
-  this.customId = `GIFTCARD-${res}`;
 
   next();
 });
@@ -130,31 +135,29 @@ giftCardSchema.pre('save', async function (next) {
   // const paxfuls = await paxfulQuery.exec();
   // console.log(paxfuls);
 
-  let trans;
-  try {
-    trans = await Transaction.create({
-      fromAccount: this.fromAccount,
-      toAccount: this.toAccount,
-      amountSpent: {
-        value: this.price.value * 1,
-        currency: this.price.currency,
-      },
-      amountSpentFee: {
-        value: this.fee.value * 1,
-        currency: this.fee.currency,
-      },
-      amountReceived: {
-        value: this.giftCardValue * 1,
-        currency: 'usd',
-      },
-    });
-  } catch (err) {
-    console.log(err);
-    return next();
-  }
+  const trans = await Transaction.create({
+    fromAccount: this.fromAccount,
+    toAccount: this.toAccount,
+    amountSpent: {
+      value: this.price.value * 1,
+      currency: this.price.currency,
+    },
+    amountSpentFee: {
+      value: this.fee.value * 1,
+      currency: this.fee.currency,
+    },
+    amountReceived: {
+      value: this.giftCardValue * 1,
+      currency: 'usd',
+    },
+  });
 
   this.fromAcctBalance = trans.fromAcctBalance;
   this.toAcctBalance = trans.toAcctBalance;
+
+  if (!trans) {
+    return next(new AppError('something is wrong', 400));
+  }
 
   if (this.price.currency === 'vnd') {
     const rates2 = [];
@@ -165,6 +168,11 @@ giftCardSchema.pre('save', async function (next) {
     this.remainingBalance = this.giftCardValue;
     rates2.push({ actualCostRate, remainingBalance: this.giftCardValue });
     this.partialBalance = rates2;
+
+    this.discountRate =
+      1 -
+      parseFloat(this.price.value) /
+        (parseFloat(this.usdVndRate) * parseFloat(this.giftCardValue));
 
     return next();
   }
@@ -311,15 +319,23 @@ giftCardSchema.pre('save', async function (next) {
 
   this.partialBalance = rates;
 
-  // update account balance
-  await Account.findOneAndUpdate(
-    { _id: this.account },
-    {
-      $inc: {
-        balance: this.giftCardValue * 1,
-      },
-    }
-  );
+  this.discountRate =
+    1 -
+    ((parseFloat(this.price.value) + parseFloat(this.fee.value)) *
+      parseFloat(this.btcUsdRate)) /
+      parseFloat(this.giftCardValue);
+
+  console.log(parseFloat(this.discountRate));
+
+  // // update account balance
+  // await Account.findOneAndUpdate(
+  //   { _id: this.account },
+  //   {
+  //     $inc: {
+  //       balance: this.giftCardValue * 1,
+  //     },
+  //   }
+  // );
   // const curAccount = await Account.findById(this.account);
 
   // const newBalance =
@@ -632,6 +648,13 @@ giftCardSchema.pre('save', async function (next) {
   // console.log(paxful);
   // console.log(parseFloat(remaining));
   // console.log(rates);
+
+  next();
+});
+
+giftCardSchema.pre('save', async function (next) {
+  const res = await getNextSequence('giftCard');
+  this.customId = `GIFTCARD-${res}`;
 
   next();
 });

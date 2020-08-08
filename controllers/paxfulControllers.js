@@ -41,3 +41,5 @@ exports.getStats = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.deletePaxful = factory.deleteOne(Paxful);

@@ -8,3 +8,5 @@ exports.getAllGiftCard = factory.getAll(giftCardModel);
 exports.updateGiftCard = factory.updateOne(giftCardModel);
 
 exports.getOneGiftCard = factory.getOne(giftCardModel);
+
+exports.deleteGiftCard = factory.deleteOne(giftCardModel);

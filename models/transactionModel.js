@@ -68,13 +68,15 @@ transactionSchema.pre(/^find/, function (next) {
     path: 'bill',
     select: '-items -customer -affiliate',
   });
-  next();
-});
 
-transactionSchema.pre('save', async function (next) {
-  const res = await getNextSequence('transaction');
-  this.customId = `TRANSACTION-${res}`;
-
+  this.populate({
+    path: 'fromAccount',
+    select: 'loginID customId currency accountWebsite',
+  });
+  this.populate({
+    path: 'toAccount',
+    select: 'loginID customId currency accountWebsite',
+  });
   next();
 });
 
@@ -115,23 +117,32 @@ transactionSchema.pre('save', async function (next) {
   }
 
   if (this.toAccount) {
-    const to = await Account.findOneAndUpdate(
-      {
-        _id: mongoose.Types.ObjectId(this.toAccount),
-        currency: this.amountReceived.currency,
-      },
-      {
-        $inc: {
-          balance: this.amountReceived.value * 1,
+    try {
+      const to = await Account.findOneAndUpdate(
+        {
+          _id: mongoose.Types.ObjectId(this.toAccount),
+          currency: this.amountReceived.currency,
         },
-      },
-      { returnOriginal: false }
-    );
+        {
+          $inc: {
+            balance: this.amountReceived.value * 1,
+          },
+        },
+        { returnOriginal: false }
+      );
 
-    if (!to) return next(new AppError('to account not found', 400));
-
-    this.toAcctBalance = to.balance;
+      this.toAcctBalance = to.balance;
+    } catch (err) {
+      return next(new AppError('to account not found', 400));
+    }
   }
+
+  next();
+});
+
+transactionSchema.pre('save', async function (next) {
+  const res = await getNextSequence('transaction');
+  this.customId = `TRANSACTION-${res}`;
 
   next();
 });

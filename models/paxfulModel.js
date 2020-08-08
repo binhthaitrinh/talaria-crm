@@ -19,14 +19,6 @@ const paxfulSchema = mongoose.Schema(
       type: mongoose.Decimal128,
       default: 0,
     },
-    usdVndRate: {
-      type: mongoose.Decimal128,
-      default: 23700,
-    },
-    btcUsdRate: {
-      type: mongoose.Decimal128,
-      default: 9500,
-    },
     amountSpent: {
       value: {
         type: mongoose.Decimal128,
@@ -38,6 +30,16 @@ const paxfulSchema = mongoose.Schema(
         default: 'vnd',
       },
     },
+
+    usdVndRate: {
+      type: mongoose.Decimal128,
+      default: 23700,
+    },
+    btcUsdRate: {
+      type: mongoose.Decimal128,
+      default: 9500,
+    },
+
     buyer: {
       type: String,
     },
@@ -146,42 +148,38 @@ const paxfulSchema = mongoose.Schema(
 paxfulSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'btcAccount',
-    select: 'balance',
+    select: 'balance loginID',
+  });
+
+  next();
+});
+
+paxfulSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'fromAccount',
+    select: 'balance loginID',
   });
 
   next();
 });
 
 paxfulSchema.pre('save', async function (next) {
-  const res = await getNextSequence('paxful');
-  this.customId = `PAXFUL-TRANS-${res}`;
-
-  next();
-});
-
-paxfulSchema.pre('save', async function (next) {
-  let trans;
-  try {
-    trans = await Transaction.create({
-      fromAccount: this.fromAccount,
-      toAccount: this.btcAccount,
-      amountSpent: {
-        value: this.amountSpent.value * 1,
-        currency: this.amountSpent.currency,
-      },
-      amountSpentFee: {
-        value: 0,
-        currency: this.amountSpent.currency,
-      },
-      amountReceived: {
-        value: this.btcAmount * 1,
-        currency: 'btc',
-      },
-    });
-  } catch (err) {
-    console.log(err);
-    return next();
-  }
+  const trans = await Transaction.create({
+    fromAccount: this.fromAccount,
+    toAccount: this.btcAccount,
+    amountSpent: {
+      value: this.amountSpent.value * 1,
+      currency: this.amountSpent.currency,
+    },
+    amountSpentFee: {
+      value: 0,
+      currency: this.amountSpent.currency,
+    },
+    amountReceived: {
+      value: this.btcAmount * 1,
+      currency: 'btc',
+    },
+  });
 
   let vndSpent = this.amountSpent.value * 1;
 
@@ -205,6 +203,13 @@ paxfulSchema.pre('save', async function (next) {
 
   // update account Balance
   this.btcAccountBalance = trans.toAcctBalance;
+
+  next();
+});
+
+paxfulSchema.pre('save', async function (next) {
+  const res = await getNextSequence('paxful');
+  this.customId = `PAXFUL-TRANS-${res}`;
 
   next();
 });

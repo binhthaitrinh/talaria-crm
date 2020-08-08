@@ -11,6 +11,7 @@ giftCardRouter
 giftCardRouter
   .route('/:id')
   .patch(giftCardControllers.updateGiftCard)
-  .get(giftCardControllers.getOneGiftCard);
+  .get(giftCardControllers.getOneGiftCard)
+  .delete(giftCardControllers.deleteGiftCard);
 
 module.exports = giftCardRouter;

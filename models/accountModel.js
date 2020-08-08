@@ -56,17 +56,23 @@ const accountSchema = mongoose.Schema(
   }
 );
 
+// accountSchema.virtual('transactions', {
+//   ref: 'Transaction',
+//   foreignField: 'toAccount',
+//   localField: '_id',
+// });
+
+// accountSchema.virtual('transactions', {
+//   ref: 'Transaction',
+//   foreignField: 'fromAccount',
+//   localField: '_id',
+// });
+
 accountSchema.pre('save', async function (next) {
   const res = await getNextSequence('account');
   this.customId = `ACCOUNT-${res}`;
 
   next();
-});
-
-accountSchema.virtual('transactions', {
-  ref: 'Transaction',
-  foreignField: 'accountID',
-  localField: '_id',
 });
 
 const accountModel = mongoose.model('Account', accountSchema);

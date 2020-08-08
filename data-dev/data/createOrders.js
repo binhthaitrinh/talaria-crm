@@ -15,7 +15,7 @@ const status = [
   'not-yet-ordered',
   'ordered',
   'on-the-way-to-warehouse',
-  'on-the-way-to-viet-nam',
+  'not-yet-ordered',
   'arrived-at-viet-nam',
   'done',
   'returning',
@@ -606,7 +606,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 10.99,
@@ -615,6 +615,7 @@ const items = [
     estimatedWeight: 0.34,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -623,7 +624,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 14.99,
@@ -632,6 +633,7 @@ const items = [
     estimatedWeight: 0.02,
     actualWeight: 0.02,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -640,7 +642,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 21,
@@ -649,6 +651,7 @@ const items = [
     estimatedWeight: 0.03,
     actualWeight: 0.1,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -657,7 +660,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 18,
@@ -666,6 +669,7 @@ const items = [
     estimatedWeight: 0.2,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -674,7 +678,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 68.42,
@@ -684,6 +688,7 @@ const items = [
     estimatedWeight: 14.4,
     actualWeight: 14.4,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -692,7 +697,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 19.18,
@@ -701,6 +706,7 @@ const items = [
     estimatedWeight: 0.5,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -709,7 +715,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 499,
@@ -718,6 +724,7 @@ const items = [
     estimatedWeight: 1.5,
     actualWeight: 1.5,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -726,7 +733,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 14.99,
@@ -735,6 +742,7 @@ const items = [
     estimatedWeight: 0.02,
     actualWeight: 0.03,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -743,7 +751,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 31.72,
@@ -752,6 +760,7 @@ const items = [
     estimatedWeight: 1.5,
     actualWeight: 1.5,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',
@@ -760,7 +769,7 @@ const items = [
     link:
       'https://www.amazon.com/dp/B01NA7KNTS/ref=twister_B01EY97QUE?_encoding=UTF8&th=2',
     name: 'Lược màu tím',
-    status: 'on-the-way-to-viet-nam',
+    status: 'not-yet-ordered',
     trackingLink:
       'https://www.amazon.com/progress-tracker/package/ref=ppx_yo_dt_b_track_package?_encoding=UTF8&itemId=lilplunrpomrsn&orderId=114-5113255-7113866&shipmentId=DW6XG2ng6&vt=YOUR_ORDERS',
     pricePerItem: 18.99,
@@ -769,6 +778,7 @@ const items = [
     estimatedWeight: 0.2,
     actualWeight: 0.4,
     orderedWebsite: 'amazon',
+    warehouse: 'unihan',
 
     type: 'others',
     notes: '',

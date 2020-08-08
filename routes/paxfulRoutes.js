@@ -12,6 +12,7 @@ paxfulRouter
 paxfulRouter
   .route('/:id')
   .patch(paxfulControllers.updatePaxful)
-  .get(paxfulControllers.getOne);
+  .get(paxfulControllers.getOne)
+  .delete(paxfulControllers.deletePaxful);
 
 module.exports = paxfulRouter;

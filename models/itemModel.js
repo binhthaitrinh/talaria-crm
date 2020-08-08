@@ -120,6 +120,11 @@ const itemSchema = mongoose.Schema(
       unique: true,
     },
     fromAcctBalance: mongoose.Decimal128,
+    warehouse: {
+      type: String,
+      required: [true, 'An item must have a warehouse to be delivered to'],
+      enum: ['unihan', 'unisgn', 'pacific', 'others'],
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -143,7 +148,7 @@ itemSchema.pre('save', async function (next) {
   next();
 });
 
-itemSchema.statics.createTransaction = async function (id) {
+itemSchema.statics.createTransaction = async function (id, accountId) {
   // query and calculate total gift card cost
   // get account balance
 
@@ -155,7 +160,7 @@ itemSchema.statics.createTransaction = async function (id) {
 
     {
       $project: {
-        orderAccount: 1,
+        _id: 1,
         status: 1,
         orderedWebsite: 1,
         // actualCost: 1,
@@ -170,30 +175,30 @@ itemSchema.statics.createTransaction = async function (id) {
         },
       },
     },
-    {
-      $lookup: {
-        from: 'accounts',
-        localField: 'orderAccount',
-        foreignField: '_id',
-        as: 'orderAccountInfo',
-      },
-    },
+    // {
+    //   $lookup: {
+    //     from: 'accounts',
+    //     localField: 'orderAccount',
+    //     foreignField: '_id',
+    //     as: 'orderAccountInfo',
+    //   },
+    // },
 
     // destructure orderAccountInfo since it will be an array
-    {
-      $unwind: '$orderAccountInfo',
-    },
-    {
-      $project: {
-        _id: 1,
-        total: 1,
-        // 'orderAccountInfo.balance': 1,
-        'orderAccountInfo._id': 1,
-        'orderAccountInfo.accountWebsite': 1,
-        status: 1,
-        orderedWebsite: 1,
-      },
-    },
+    // {
+    //   $unwind: '$orderAccountInfo',
+    // },
+    // {
+    //   $project: {
+    //     _id: 1,
+    //     total: 1,
+    //     // 'orderAccountInfo.balance': 1,
+    //     'orderAccountInfo._id': 1,
+    //     'orderAccountInfo.accountWebsite': 1,
+    //     status: 1,
+    //     orderedWebsite: 1,
+    //   },
+    // },
   ]);
 
   if (item.length === 0) {
@@ -205,19 +210,19 @@ itemSchema.statics.createTransaction = async function (id) {
     return new AppError('Item already ordered', 400);
   }
 
-  // check orderAccount with associated account
-  if (
-    item[0].orderedWebsite.toLowerCase() !==
-    item[0].orderAccountInfo.accountWebsite.toLowerCase()
-  ) {
-    return new AppError('Oops, Wrong account', 400);
-  }
+  // // check orderAccount with associated account
+  // if (
+  //   item[0].orderedWebsite.toLowerCase() !==
+  //   item[0].orderAccountInfo.accountWebsite.toLowerCase()
+  // ) {
+  //   return new AppError('Oops, Wrong account', 400);
+  // }
 
   let trans;
 
   try {
     trans = await Transaction.create({
-      fromAccount: item[0].orderAccountInfo._id,
+      fromAccount: accountId,
 
       amountSpent: {
         value: item[0].total * 1,
@@ -247,7 +252,7 @@ itemSchema.statics.createTransaction = async function (id) {
     {
       $match: {
         remainingBalance: { $gt: 0 },
-        toAccount: mongoose.Types.ObjectId(item[0].orderAccountInfo._id),
+        toAccount: mongoose.Types.ObjectId(accountId),
       },
     },
     {
@@ -422,22 +427,6 @@ itemSchema.statics.createTransaction = async function (id) {
     )
   );
 
-  // update status to ordered & actualCost
-  giftCardPromises.push(
-    this.updateOne(
-      {
-        _id: mongoose.Types.ObjectId(id),
-      },
-      {
-        $set: {
-          actualCost,
-          status: 'ordered',
-          fromAcctBalance: trans.fromAcctBalance,
-        },
-      }
-    )
-  );
-
   // update remainingBalance for last giftcard
   giftCardPromises.push(
     GiftCard.updateOne(
@@ -482,6 +471,23 @@ itemSchema.statics.createTransaction = async function (id) {
   // );
 
   await Promise.all(giftCardPromises);
+
+  // update status to ordered & actualCost
+  const newItem = await this.findOneAndUpdate(
+    {
+      _id: mongoose.Types.ObjectId(id),
+    },
+    {
+      $set: {
+        actualCost,
+        status: 'ordered',
+        fromAcctBalance: trans.fromAcctBalance,
+        orderDate: Date.now(),
+        orderAccount: accountId,
+      },
+    },
+    { returnOriginal: false }
+  );
   // // throw error if account not have enough balance to charge
   // if (item[0].total > item[0].orderAccountInfo.balance) {
   //   return new AppError('Not enough balance in account', 400);
@@ -749,9 +755,7 @@ itemSchema.statics.createTransaction = async function (id) {
 
   // await Promise.all(giftCardPromises);
 
-  return {
-    actualCost,
-  };
+  return newItem;
 };
 
 const Item = mongoose.model('Item', itemSchema);

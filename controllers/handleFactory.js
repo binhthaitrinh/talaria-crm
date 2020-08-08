@@ -30,20 +30,19 @@ exports.getAll = (Model) => {
       .limitFields()
       .paginate();
     const doc = await features.query;
-    const numOfResults = await Model.aggregate([
-      {
-        $group: {
-          _id: null,
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+
+    const getIds = new APIFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .limitFields('_id');
+
+    const totalResults = await getIds.query;
 
     // SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: doc.length,
-      numOfResults: numOfResults[0] ? numOfResults[0].count : 0,
+      numOfResults: totalResults.length,
       data: {
         data: doc,
       },

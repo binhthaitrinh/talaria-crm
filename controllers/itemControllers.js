@@ -8,7 +8,10 @@ exports.getAllItems = factory.getAll(Item);
 exports.createItem = factory.createOne(Item);
 
 exports.chargeMoney = catchAsync(async (req, res, next) => {
-  const transaction = await Item.createTransaction(req.params.id);
+  const transaction = await Item.createTransaction(
+    req.params.id,
+    req.body.account
+  );
 
   if (transaction.statusCode && transaction.statusCode === 400) {
     return next(transaction);

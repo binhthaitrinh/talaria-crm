@@ -2,10 +2,11 @@ const mongoose = require('mongoose');
 const getNextSequence = require('../utils/getNextSequence');
 
 const affiliateSchema = mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
     required: [true, 'An Affiliate must have a name'],
   },
+  lastName: String,
   socialMediaLinks: [
     {
       socialMediaType: {

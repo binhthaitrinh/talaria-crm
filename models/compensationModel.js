@@ -17,9 +17,23 @@ const compensationSchema = mongoose.Schema({
   amount: mongoose.Decimal128,
   status: {
     type: String,
-    enum: ['paid', 'pending'],
+    enum: ['paid', 'pending', 'bill-not-paid'],
     default: 'pending',
   },
+
+  customId: {
+    type: String,
+    unique: true,
+  },
+});
+
+compensationSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'bill',
+    select: 'actualChargeCustomer -items -customer',
+  });
+
+  next();
 });
 
 compensationSchema.pre('save', async function (next) {

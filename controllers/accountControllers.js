@@ -29,8 +29,8 @@ exports.getOneAccount = factory.getOne(Account);
 exports.getTransactions = catchAsync(async (req, res, next) => {
   const results = await Transaction.find({
     $or: [
-      { fromAccount: mongoose.Types.ObjectId('5ecef412c697ac79087b4cfb') },
-      { toAccount: mongoose.Types.ObjectId('5ecef412c697ac79087b4cfb') },
+      { fromAccount: mongoose.Types.ObjectId(req.params.id) },
+      { toAccount: mongoose.Types.ObjectId(req.params.id) },
     ],
   }).sort({ createdAt: -1, _id: -1 });
 

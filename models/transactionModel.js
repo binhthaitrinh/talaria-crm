@@ -61,7 +61,7 @@ const transactionSchema = mongoose.Schema({
 transactionSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'item',
-    select: 'name _id quantity -orderAccount',
+    select: 'name _id quantity pricePerItem -orderAccount',
   });
 
   this.populate({

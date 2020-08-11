@@ -69,9 +69,13 @@ exports.updateOne = (Model) =>
     });
   });
 
-exports.getOne = (Model) =>
+exports.getOne = (Model, populateOpts) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findById(req.params.id);
+    let query = Model.findById(req.params.id);
+
+    if (populateOpts) query = query.populate(populateOpts);
+
+    const doc = await query;
 
     if (!doc) {
       return next(new AppError('No tour found with that ID', 404));

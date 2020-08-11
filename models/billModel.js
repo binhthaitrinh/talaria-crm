@@ -205,6 +205,14 @@ billSchema.pre('save', async function (next) {
   next();
 });
 
+billSchema.post('save', async function () {
+  await Compensation.create({
+    bill: this._id,
+    status: 'bill-not-paid',
+    affiliate: this.affiliate,
+  });
+});
+
 billSchema.statics.customerPay = async function (id, amount) {
   // find the bill doc to be paid
   const bill = await this.findOne({ _id: id }).select(
@@ -264,17 +272,29 @@ billSchema.statics.customerPay = async function (id, amount) {
   // );
 
   if (remaining <= 0) {
-    await Compensation.create({
-      bill: id,
-      status: 'pending',
-      affiliate: bill.affiliate._id,
-      amount:
-        Math.round(
-          parseFloat(bill.actualChargeCustomer) *
-            100000000 *
-            parseFloat(bill.affiliate.commissionRate)
-        ) / 100000000,
-    });
+    await Compensation.findOneAndUpdate(
+      { affiliate: bill.affiliate._id, bill: bill._id },
+      {
+        amount:
+          Math.round(
+            parseFloat(bill.actualChargeCustomer) *
+              100000000 *
+              parseFloat(bill.affiliate.commissionRate)
+          ) / 100000000,
+        status: 'pending',
+      }
+    );
+    // await Compensation.create({
+    //   bill: id,
+    //   status: 'pending',
+    //   affiliate: bill.affiliate._id,
+    //   amount:
+    //     Math.round(
+    //       parseFloat(bill.actualChargeCustomer) *
+    //         100000000 *
+    //         parseFloat(bill.affiliate.commissionRate)
+    //     ) / 100000000,
+    // });
   }
 
   // update bill status

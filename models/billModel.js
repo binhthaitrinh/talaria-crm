@@ -7,6 +7,8 @@ const Compensation = require('./compensationModel');
 const AppError = require('../utils/appError');
 const getNextSequence = require('../utils/getNextSequence');
 
+const MUL = 100000000;
+
 const billSchema = mongoose.Schema({
   createdAt: {
     type: Date,
@@ -41,7 +43,7 @@ const billSchema = mongoose.Schema({
   estimatedWeight: mongoose.Decimal128,
   shippingRateToVnInUSD: {
     type: mongoose.Decimal128,
-    default: 12.5,
+    default: 12,
   },
 
   taxForCustomer: {
@@ -58,6 +60,7 @@ const billSchema = mongoose.Schema({
   actualBillCost: mongoose.Decimal128,
   moneyChargeCustomerUSD: mongoose.Decimal128,
   actualChargeCustomer: mongoose.Decimal128,
+
   // moneyChargeCustomerVND: mongoose.Decimal128,
 
   moneyTransferReceipt: String,
@@ -65,6 +68,7 @@ const billSchema = mongoose.Schema({
     type: String,
     unique: true,
   },
+  notes: String,
 
   // actualCost: mongoose.Decimal128,
 });
@@ -72,7 +76,7 @@ const billSchema = mongoose.Schema({
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'customer',
-    select: 'customerName customerType',
+    select: 'firstName lastName customerType',
   });
 
   next();
@@ -90,7 +94,7 @@ billSchema.pre(/^find/, function (next) {
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'affiliate',
-    select: 'name commissionRate',
+    select: 'firstName lastName commissionRate',
   });
 
   next();
@@ -116,61 +120,103 @@ billSchema.pre('save', async function (next) {
         },
       },
     },
-    {
-      $group: {
-        _id: null,
-        totalEstimatedWeight: {
-          $sum: '$estimatedWeight',
-        },
-        moneyChargeCustomerUSD: {
-          $sum: {
-            $add: [
-              '$usShippingFee',
-              {
-                $multiply: [
-                  '$pricePerItem',
-                  '$quantity',
-                  1 - customer.discountRate,
-                ],
-              },
-              {
-                $multiply: [
-                  this.taxForCustomer,
-                  {
-                    $add: [
-                      '$usShippingFee',
-                      {
-                        $multiply: ['$pricePerItem', '$quantity'],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        totalBillCost: {
-          $sum: {
-            $add: [
-              '$usShippingFee',
-              {
-                $multiply: [
-                  '$pricePerItem',
-                  '$quantity',
-                  {
-                    $add: [1, this.taxForCustomer],
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      },
-    },
+    // {
+    //   $group: {
+    //     _id: null,
+    //     totalEstimatedWeight: {
+    //       $sum: '$estimatedWeight',
+    //     },
+    //     moneyChargeCustomerUSD: {
+    //       $sum: {
+    //         $add: [
+    //           '$usShippingFee',
+    //           {
+    //             $multiply: [
+    //               '$pricePerItem',
+    //               '$quantity',
+
+    //               1 - customer.discountRate['$orderedWebsite'] * 1,
+    //             ],
+    //           },
+    //           {
+    //             $multiply: [
+    //               this.taxForCustomer,
+    //               {
+    //                 $add: [
+    //                   '$usShippingFee',
+    //                   {
+    //                     $multiply: ['$pricePerItem', '$quantity'],
+    //                   },
+    //                 ],
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       },
+    //     },
+    //     totalBillCost: {
+    //       $sum: {
+    //         $add: [
+    //           '$usShippingFee',
+    //           {
+    //             $multiply: [
+    //               '$pricePerItem',
+    //               '$quantity',
+    //               {
+    //                 $add: [1, this.taxForCustomer],
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       },
+    //     },
+    //   },
+    // },
   ]);
+  console.log(result);
+  let totalBillCost = 0;
+  let moneyChargeCustomerUSD = 0;
+  let totalEstimatedWeight = 0;
+  const taxForCustomer = this.taxForCustomer;
+
+  result.forEach((item) => {
+    const {
+      usShippingFee,
+      pricePerItem,
+      quantity,
+      orderedWebsite,
+      estimatedWeight,
+    } = item;
+
+    totalBillCost =
+      Math.round(
+        totalBillCost * MUL +
+          parseFloat(usShippingFee) * MUL +
+          MUL *
+            parseFloat(pricePerItem) *
+            parseFloat(quantity) *
+            (1 + parseFloat(taxForCustomer))
+      ) / MUL;
+
+    moneyChargeCustomerUSD =
+      Math.round(
+        moneyChargeCustomerUSD * MUL +
+          usShippingFee * MUL +
+          MUL *
+            pricePerItem *
+            quantity *
+            (1 - customer.discountRate[orderedWebsite]) +
+          MUL *
+            parseFloat(taxForCustomer) *
+            (usShippingFee + pricePerItem * quantity)
+      ) / MUL;
+
+    totalEstimatedWeight =
+      Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
+  });
 
   // calculate total bill estimated weight
-  this.estimatedWeight = result[0].totalEstimatedWeight;
+  this.estimatedWeight = totalEstimatedWeight;
 
   // calculate shipping fee to VN
   const shippingFeeToVnInUSD =
@@ -182,14 +228,13 @@ billSchema.pre('save', async function (next) {
   this.moneyChargeCustomerUSD =
     Math.round(
       shippingFeeToVnInUSD * 100000000 +
-        parseFloat(result[0].moneyChargeCustomerUSD) * 100000000
+        parseFloat(moneyChargeCustomerUSD) * 100000000
     ) / 100000000;
 
   // calculate total gift card money + shipping fee to VN
   this.actualBillCost =
     Math.round(
-      shippingFeeToVnInUSD * 100000000 +
-        parseFloat(result[0].totalBillCost) * 100000000
+      shippingFeeToVnInUSD * 100000000 + parseFloat(totalBillCost) * 100000000
     ) / 100000000;
 
   // this.moneyChargeCustomerVND =
@@ -219,8 +264,6 @@ billSchema.statics.customerPay = async function (id, amount) {
     'moneyReceived remaining actualChargeCustomer status -items -customer'
   );
 
-  console.log(bill);
-
   if (bill.status === 'fully-paid') {
     return new AppError('Bill already paid', 400);
   }
@@ -241,7 +284,7 @@ billSchema.statics.customerPay = async function (id, amount) {
         parseFloat(moneyReceived) * 100000000
     ) / 100000000;
 
-  await this.updateOne(
+  const newBill = await this.findOneAndUpdate(
     { _id: id },
     {
       $set: {
@@ -250,7 +293,8 @@ billSchema.statics.customerPay = async function (id, amount) {
         status: remaining > 0 ? 'partially-paid' : 'fully-paid',
         moneyReceived,
       },
-    }
+    },
+    { returnOriginal: false }
   );
 
   const transaction = await Transaction.create({
@@ -298,7 +342,7 @@ billSchema.statics.customerPay = async function (id, amount) {
   }
 
   // update bill status
-  return transaction;
+  return newBill;
 };
 
 const billModel = mongoose.model('Bill', billSchema);

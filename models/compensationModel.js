@@ -30,7 +30,7 @@ const compensationSchema = mongoose.Schema({
 compensationSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'bill',
-    select: 'actualChargeCustomer -items -customer',
+    select: 'actualChargeCustomer customId -items -customer',
   });
 
   next();

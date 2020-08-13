@@ -32,11 +32,37 @@ const customerSchema = mongoose.Schema(
     ],
     phoneNumber: String,
     discountRate: {
-      type: mongoose.Decimal128,
-      default: 0.08,
-      min: [0, 'discount rate must be larger than 0'],
-      max: [1, 'discount rate cannot be larger than 1'],
+      amazon: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      sephora: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      ebay: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      bestbuy: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      costco: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      walmart: {
+        type: mongoose.Decimal128,
+        default: 0.08,
+      },
+      assisting: {
+        type: mongoose.Decimal128,
+        default: -0.05,
+      },
     },
+    // type: mongoose.Decimal128,
+    // default: 0.08,
     notes: String,
     bankAccounts: [
       {

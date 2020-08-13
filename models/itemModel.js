@@ -16,6 +16,7 @@ const itemSchema = mongoose.Schema(
     },
     name: {
       type: String,
+      required: [true, 'An Item must have a name'],
     },
     status: {
       type: String,
@@ -78,7 +79,7 @@ const itemSchema = mongoose.Schema(
         'bestbuy',
         'costco',
         'walmart',
-        'others',
+        'assisting',
       ],
       default: 'amazon',
     },

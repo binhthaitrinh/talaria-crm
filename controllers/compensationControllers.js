@@ -30,9 +30,28 @@ exports.getMonthlyCompensations = catchAsync(async (req, res, next) => {
         affiliate: mongoose.Types.ObjectId(req.params.id),
       },
     },
+    {
+      $lookup: {
+        from: 'bills',
+        localField: 'bill',
+        foreignField: '_id',
+        as: 'bill',
+      },
+    },
+    {
+      $unwind: '$bill',
+    },
+    {
+      $project: {
+        createdAt: 1,
+        status: 1,
+        'bill.customId': 1,
+        'bill._id': 1,
+        customId: 1,
+        amount: 1,
+      },
+    },
   ]);
-
-  console.log(docs);
 
   res.status(200).json({
     status: 'success',

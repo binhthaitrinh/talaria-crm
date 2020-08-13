@@ -26,7 +26,7 @@ const corsOptions = {
   origin: 'http://localhost:3000',
 };
 
-const allowLost = [
+const allowlist = [
   'http://localhost:3000',
   'https://talaria-frontend.vercel.app',
 ];

@@ -22,17 +22,19 @@ const AppError = require('./utils/appError');
 
 const app = express();
 
-const corsOptions = {
-  origin: 'http://localhost:3000',
-};
+// const corsOptions = {
+//   origin: 'http://localhost:3000',
+// };
 
 const allowlist = [
   'http://localhost:3000',
   'https://talaria-frontend.vercel.app',
+  'talaria-frontend-git-master.binhthaitrinh.vercel.app',
+  'talaria-frontend.binhthaitrinh.vercel.app',
 ];
 
-var corsOptionsDelegate = function (req, callback) {
-  var corsOptions;
+const corsOptionsDelegate = function (req, callback) {
+  let corsOptions;
   if (allowlist.indexOf(req.header('Origin')) !== -1) {
     corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response
   } else {

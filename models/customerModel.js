@@ -70,6 +70,23 @@ const customerSchema = mongoose.Schema(
         bankName: String,
       },
     ],
+    socialMediaLinks: [
+      {
+        socialMediaType: {
+          type: String,
+          enum: [
+            'facebook',
+            'instagram',
+            'tiktok',
+            'pinterest',
+            'zalo',
+            'telegram',
+            'others',
+          ],
+        },
+        link: String,
+      },
+    ],
     createdAt: {
       type: Date,
       default: Date.now(),

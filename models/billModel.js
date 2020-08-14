@@ -76,7 +76,7 @@ const billSchema = mongoose.Schema({
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'customer',
-    select: 'firstName lastName customerType',
+    select: 'firstName lastName customerType discountRate address phoneNumber',
   });
 
   next();
@@ -85,7 +85,8 @@ billSchema.pre(/^find/, function (next) {
 billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'items',
-    select: 'name quantity -orderAccount',
+    select:
+      'name quantity pricePerItem createdAt usShippingFee orderedWebsite estimatedWeight -orderAccount',
   });
 
   next();

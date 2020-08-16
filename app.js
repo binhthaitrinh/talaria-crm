@@ -29,8 +29,8 @@ const app = express();
 const allowlist = [
   'http://localhost:3000',
   'https://talaria-frontend.vercel.app',
-  'talaria-frontend-git-master.binhthaitrinh.vercel.app',
-  'talaria-frontend.binhthaitrinh.vercel.app',
+  'https://talaria-frontend-git-master.binhthaitrinh.vercel.app',
+  'https://talaria-frontend.binhthaitrinh.vercel.app',
 ];
 
 const corsOptionsDelegate = function (req, callback) {

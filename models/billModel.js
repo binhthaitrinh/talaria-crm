@@ -101,19 +101,12 @@ billSchema.pre(/^find/, function (next) {
   next();
 });
 
-billSchema.pre('save', async function (next) {
-  const res = await getNextSequence('bill');
-  this.customId = `BILL-${res}`;
-
-  next();
-});
-
-billSchema.pre('save', async function (next) {
+billSchema.methods.calcBill = async function () {
   const customer = await Customer.findById(this.customer).select(
     'discountRate'
   );
 
-  const result = await Item.aggregate([
+  const items = await Item.aggregate([
     {
       $match: {
         _id: {
@@ -121,66 +114,14 @@ billSchema.pre('save', async function (next) {
         },
       },
     },
-    // {
-    //   $group: {
-    //     _id: null,
-    //     totalEstimatedWeight: {
-    //       $sum: '$estimatedWeight',
-    //     },
-    //     moneyChargeCustomerUSD: {
-    //       $sum: {
-    //         $add: [
-    //           '$usShippingFee',
-    //           {
-    //             $multiply: [
-    //               '$pricePerItem',
-    //               '$quantity',
-
-    //               1 - customer.discountRate['$orderedWebsite'] * 1,
-    //             ],
-    //           },
-    //           {
-    //             $multiply: [
-    //               this.taxForCustomer,
-    //               {
-    //                 $add: [
-    //                   '$usShippingFee',
-    //                   {
-    //                     $multiply: ['$pricePerItem', '$quantity'],
-    //                   },
-    //                 ],
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     },
-    //     totalBillCost: {
-    //       $sum: {
-    //         $add: [
-    //           '$usShippingFee',
-    //           {
-    //             $multiply: [
-    //               '$pricePerItem',
-    //               '$quantity',
-    //               {
-    //                 $add: [1, this.taxForCustomer],
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     },
-    //   },
-    // },
   ]);
-  console.log(result);
+
   let totalBillCost = 0;
   let moneyChargeCustomerUSD = 0;
   let totalEstimatedWeight = 0;
-  const taxForCustomer = this.taxForCustomer;
+  const { taxForCustomer } = this;
 
-  result.forEach((item) => {
+  items.forEach((item) => {
     const {
       usShippingFee,
       pricePerItem,
@@ -237,6 +178,145 @@ billSchema.pre('save', async function (next) {
     Math.round(
       shippingFeeToVnInUSD * 100000000 + parseFloat(totalBillCost) * 100000000
     ) / 100000000;
+};
+
+billSchema.pre('save', async function (next) {
+  const res = await getNextSequence('bill');
+  this.customId = `BILL-${res}`;
+
+  next();
+});
+
+billSchema.pre('save', async function (next) {
+  await this.calcBill();
+  // const customer = await Customer.findById(this.customer).select(
+  //   'discountRate'
+  // );
+
+  // const result = await Item.aggregate([
+  //   {
+  //     $match: {
+  //       _id: {
+  //         $in: this.items,
+  //       },
+  //     },
+  //   },
+  //   // {
+  //   //   $group: {
+  //   //     _id: null,
+  //   //     totalEstimatedWeight: {
+  //   //       $sum: '$estimatedWeight',
+  //   //     },
+  //   //     moneyChargeCustomerUSD: {
+  //   //       $sum: {
+  //   //         $add: [
+  //   //           '$usShippingFee',
+  //   //           {
+  //   //             $multiply: [
+  //   //               '$pricePerItem',
+  //   //               '$quantity',
+
+  //   //               1 - customer.discountRate['$orderedWebsite'] * 1,
+  //   //             ],
+  //   //           },
+  //   //           {
+  //   //             $multiply: [
+  //   //               this.taxForCustomer,
+  //   //               {
+  //   //                 $add: [
+  //   //                   '$usShippingFee',
+  //   //                   {
+  //   //                     $multiply: ['$pricePerItem', '$quantity'],
+  //   //                   },
+  //   //                 ],
+  //   //               },
+  //   //             ],
+  //   //           },
+  //   //         ],
+  //   //       },
+  //   //     },
+  //   //     totalBillCost: {
+  //   //       $sum: {
+  //   //         $add: [
+  //   //           '$usShippingFee',
+  //   //           {
+  //   //             $multiply: [
+  //   //               '$pricePerItem',
+  //   //               '$quantity',
+  //   //               {
+  //   //                 $add: [1, this.taxForCustomer],
+  //   //               },
+  //   //             ],
+  //   //           },
+  //   //         ],
+  //   //       },
+  //   //     },
+  //   //   },
+  //   // },
+  // ]);
+  // console.log(result);
+  // let totalBillCost = 0;
+  // let moneyChargeCustomerUSD = 0;
+  // let totalEstimatedWeight = 0;
+  // const taxForCustomer = this.taxForCustomer;
+
+  // result.forEach((item) => {
+  //   const {
+  //     usShippingFee,
+  //     pricePerItem,
+  //     quantity,
+  //     orderedWebsite,
+  //     estimatedWeight,
+  //   } = item;
+
+  //   totalBillCost =
+  //     Math.round(
+  //       totalBillCost * MUL +
+  //         parseFloat(usShippingFee) * MUL +
+  //         MUL *
+  //           parseFloat(pricePerItem) *
+  //           parseFloat(quantity) *
+  //           (1 + parseFloat(taxForCustomer))
+  //     ) / MUL;
+
+  //   moneyChargeCustomerUSD =
+  //     Math.round(
+  //       moneyChargeCustomerUSD * MUL +
+  //         usShippingFee * MUL +
+  //         MUL *
+  //           pricePerItem *
+  //           quantity *
+  //           (1 - customer.discountRate[orderedWebsite]) +
+  //         MUL *
+  //           parseFloat(taxForCustomer) *
+  //           (usShippingFee + pricePerItem * quantity)
+  //     ) / MUL;
+
+  //   totalEstimatedWeight =
+  //     Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
+  // });
+
+  // // calculate total bill estimated weight
+  // this.estimatedWeight = totalEstimatedWeight;
+
+  // // calculate shipping fee to VN
+  // const shippingFeeToVnInUSD =
+  //   Math.round(
+  //     parseFloat(this.estimatedWeight) * 100 * 10 * this.shippingRateToVnInUSD
+  //   ) / 1000;
+
+  // // calculate money to charge customer (include shipping fee)
+  // this.moneyChargeCustomerUSD =
+  //   Math.round(
+  //     shippingFeeToVnInUSD * 100000000 +
+  //       parseFloat(moneyChargeCustomerUSD) * 100000000
+  //   ) / 100000000;
+
+  // // calculate total gift card money + shipping fee to VN
+  // this.actualBillCost =
+  //   Math.round(
+  //     shippingFeeToVnInUSD * 100000000 + parseFloat(totalBillCost) * 100000000
+  //   ) / 100000000;
 
   // this.moneyChargeCustomerVND =
   //   Math.round(this.usdVndRate * (100000000 * this.moneyChargeCustomerUSD)) /

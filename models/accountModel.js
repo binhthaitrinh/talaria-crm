@@ -37,6 +37,7 @@ const accountSchema = mongoose.Schema(
     accountType: {
       type: String,
       enum: ['owned', 'borrowed'],
+      required: [true, 'An account must belong to a type'],
     },
     notes: String,
     status: {

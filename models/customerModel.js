@@ -9,7 +9,6 @@ const customerSchema = mongoose.Schema(
     },
     lastName: {
       type: String,
-      required: [true, 'A customer must have last name'],
     },
     customerType: {
       type: String,
@@ -27,7 +26,6 @@ const customerSchema = mongoose.Schema(
           type: String,
           required: [true, 'There must be a city'],
         },
-        notes: String,
       },
     ],
     phoneNumber: String,

@@ -8,68 +8,80 @@ const getNextSequence = require('../utils/getNextSequence');
 
 const MUL = 100000000;
 
-const billSchema = mongoose.Schema({
-  createdAt: {
-    type: Date,
-    default: Date.now(),
-  },
-  items: [
-    {
-      type: mongoose.Schema.ObjectId,
-      ref: 'Item',
+const billSchema = mongoose.Schema(
+  {
+    createdAt: {
+      type: Date,
+      default: Date.now(),
     },
-  ],
-  usdVndRate: {
-    type: mongoose.Decimal128,
-    required: [true, 'A bill must have usd/vnd rate'],
-  },
-  customer: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Customer',
-    required: [true, 'A bill must belong to a customer'],
-  },
-  affiliate: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Affiliate',
-    //  required: [true, 'A bill must have an affiliate'],
-  },
-  status: {
-    type: String,
-    enum: ['not-paid', 'partially-paid', 'fully-paid'],
-    default: 'not-paid',
-  },
+    // items: [
+    //   {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'Item',
+    //   },
+    // ],
+    usdVndRate: {
+      type: mongoose.Decimal128,
+      required: [true, 'A bill must have usd/vnd rate'],
+    },
+    customer: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Customer',
+      required: [true, 'A bill must belong to a customer'],
+    },
+    affiliate: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Affiliate',
+      //  required: [true, 'A bill must have an affiliate'],
+    },
+    status: {
+      type: String,
+      enum: ['not-paid', 'partially-paid', 'fully-paid'],
+      default: 'not-paid',
+    },
 
-  estimatedWeight: mongoose.Decimal128,
-  shippingRateToVnInUSD: {
-    type: mongoose.Decimal128,
-    default: 12,
-  },
+    estimatedWeight: mongoose.Decimal128,
+    shippingRateToVnInUSD: {
+      type: mongoose.Decimal128,
+      default: 12,
+    },
 
-  taxForCustomer: {
-    type: mongoose.Decimal128,
-    default: 0.0,
-    min: [0, 'Tax cannot be negative'],
-    max: [1, 'Tax cannot be more than 100%'],
-  },
-  moneyReceived: {
-    type: mongoose.Decimal128,
-    default: 0,
-  },
-  remaining: mongoose.Decimal128,
-  actualBillCost: mongoose.Decimal128,
-  moneyChargeCustomerUSD: mongoose.Decimal128,
-  actualChargeCustomer: mongoose.Decimal128,
+    taxForCustomer: {
+      type: mongoose.Decimal128,
+      default: 0.0,
+      min: [0, 'Tax cannot be negative'],
+      max: [1, 'Tax cannot be more than 100%'],
+    },
+    moneyReceived: {
+      type: mongoose.Decimal128,
+      default: 0,
+    },
+    remaining: mongoose.Decimal128,
+    actualBillCost: mongoose.Decimal128,
+    moneyChargeCustomerUSD: mongoose.Decimal128,
+    actualChargeCustomer: mongoose.Decimal128,
 
-  // moneyChargeCustomerVND: mongoose.Decimal128,
+    // moneyChargeCustomerVND: mongoose.Decimal128,
 
-  moneyTransferReceipt: String,
-  customId: {
-    type: String,
-    unique: true,
+    moneyTransferReceipt: String,
+    customId: {
+      type: String,
+      unique: true,
+    },
+    notes: String,
+
+    // actualCost: mongoose.Decimal128,
   },
-  notes: String,
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
 
-  // actualCost: mongoose.Decimal128,
+billSchema.virtual('items', {
+  ref: 'Item',
+  foreignField: 'bill',
+  localField: '_id',
 });
 
 billSchema.pre(/^find/, function (next) {

@@ -164,64 +164,112 @@ itemSchema.pre('save', async function (next) {
 itemSchema.statics.calcBill = async function (doc) {
   try {
     const bill = await Bill.findById(doc.bill).select(
-      'customer taxForCustomer shippingRateToVnInUSD usdVndRate -items -affiliate'
+      'customer taxForCustomer shippingRateToVnInUSD usdVndRate moneyReceived -items -affiliate'
     );
+
+    const items = await this.aggregate([
+      {
+        $match: {
+          bill: doc.bill,
+        },
+      },
+    ]);
+
+    let totalBillCost = 0;
+    let moneyChargeCustomerUSD = 0;
+    let totalEstimatedWeight = 0;
+    const {
+      customer,
+      taxForCustomer,
+      shippingRateToVnInUSD,
+      usdVndRate,
+    } = bill;
+
+    items.forEach((item) => {
+      const {
+        usShippingFee,
+        pricePerItem,
+        quantity,
+        orderedWebsite,
+        estimatedWeight,
+      } = item;
+
+      totalBillCost =
+        Math.round(
+          totalBillCost * MUL +
+            parseFloat(usShippingFee) * MUL +
+            MUL *
+              parseFloat(pricePerItem) *
+              parseFloat(quantity) *
+              (1 + parseFloat(taxForCustomer))
+        ) / MUL;
+
+      moneyChargeCustomerUSD =
+        Math.round(
+          moneyChargeCustomerUSD * MUL +
+            usShippingFee * MUL +
+            MUL *
+              pricePerItem *
+              quantity *
+              (1 - customer.discountRate[orderedWebsite]) +
+            MUL *
+              parseFloat(taxForCustomer) *
+              (usShippingFee + pricePerItem * quantity)
+        ) / MUL;
+
+      totalEstimatedWeight =
+        Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
+    });
 
     // calculate shippingFeeToVnInUSD
     const shippingFeeToVnInUSD =
       Math.round(
-        parseFloat(doc.estimatedWeight) *
+        parseFloat(totalEstimatedWeight) *
           100 *
           10 *
-          parseFloat(bill.shippingRateToVnInUSD)
+          parseFloat(shippingRateToVnInUSD)
       ) / 1000;
 
     // calculate totalBillCost after ship
-    const totalBillCost =
-      Math.round(
-        parseFloat(doc.usShippingFee) * MUL +
-          MUL *
-            parseFloat(doc.pricePerItem) *
-            parseFloat(doc.quantity) *
-            (1 + parseFloat(bill.taxForCustomer)) +
-          shippingFeeToVnInUSD * MUL
-      ) / MUL;
+    totalBillCost =
+      Math.round(totalBillCost * MUL + shippingFeeToVnInUSD * MUL) / MUL;
 
     console.log(totalBillCost, 'total bill cost');
 
     // calculate moneyChargeCustomer after ship
-    const moneyChargeCustomerUSD =
-      Math.round(
-        doc.usShippingFee * MUL +
-          MUL *
-            doc.pricePerItem *
-            doc.quantity *
-            (1 - bill.customer.discountRate[doc.orderedWebsite]) +
-          MUL *
-            parseFloat(bill.taxForCustomer) *
-            (doc.usShippingFee + doc.pricePerItem * doc.quantity) +
-          shippingFeeToVnInUSD * MUL
-      ) / MUL;
+    moneyChargeCustomerUSD =
+      Math.round(moneyChargeCustomerUSD * MUL + shippingFeeToVnInUSD * MUL) /
+      MUL;
 
     await Bill.findByIdAndUpdate(doc.bill, {
-      $inc: {
-        estimatedWeight: doc.estimatedWeight,
-        remaining:
-          Math.round(
-            parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD
-          ) / MUL,
-        actualBillCost: totalBillCost,
-        moneyChargeCustomerUSD: moneyChargeCustomerUSD,
-        actualChargeCustomer:
-          Math.round(
-            parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD
-          ) / MUL,
-      },
+      estimatedWeight: totalEstimatedWeight,
+      remaining:
+        Math.round(
+          parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD -
+            parseFloat(bill.moneyReceived) * MUL
+        ) / MUL,
+      actualBillCost: totalBillCost,
+      moneyChargeCustomerUSD: moneyChargeCustomerUSD,
+      actualChargeCustomer:
+        Math.round(parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD) /
+        MUL,
     });
   } catch (err) {
     console.log(err);
   }
 };
+
+// findOneAndUpdate
+// findOneAndDelete
+itemSchema.pre(/^findOneAnd/, async function (next) {
+  this.r = await this.findOne();
+
+  next();
+});
+
+itemSchema.post(/^findOneAnd/, async function () {
+  await this.r.constructor.calcBill(this.r);
+});
 
 itemSchema.post('save', function (doc) {
   console.log(doc);

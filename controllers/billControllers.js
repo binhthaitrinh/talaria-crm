@@ -29,6 +29,37 @@ exports.customerPay = catchAsync(async (req, res, next) => {
 
 exports.deleteBill = factory.deleteOne(Bill);
 
+exports.updateBillUponCreation = catchAsync(async (req, res, next) => {
+  const bill = await Bill.findById(req.params.id);
+
+  const { usdVndRate, moneyChargeCustomerUSD } = bill;
+
+  const remaining =
+    Math.round(usdVndRate * (100000000 * moneyChargeCustomerUSD)) / 100000000;
+
+  const actualChargeCustomer = remaining;
+
+  const data = await Bill.findOneAndUpdate(
+    { _id: bill._id },
+    {
+      $set: {
+        remaining,
+        actualChargeCustomer,
+      },
+    },
+    {
+      returnOriginal: false,
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data,
+    },
+  });
+});
+
 exports.updateBill = factory.updateOne(Bill);
 
 exports.updatePrice = catchAsync(async (req, res, next) => {

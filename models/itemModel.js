@@ -3,6 +3,7 @@ const Transaction = require('./transactionModel');
 const GiftCard = require('./giftCardModel');
 const AppError = require('../utils/appError');
 const Account = require('./accountModel');
+const Bill = require('./billModel');
 const getNextSequence = require('../utils/getNextSequence');
 const catchAsync = require('../utils/catchAsync');
 
@@ -65,6 +66,12 @@ const itemSchema = mongoose.Schema(
       type: mongoose.Decimal128,
       default: 0.0,
     },
+    // partialBalance: [
+    //   {
+    //     actualCostRate: mongoose.Decimal128,
+    //     remainingBalance: mongoose.Decimal128,
+    //   },
+    // ],
     quantity: {
       type: Number,
       default: 1,
@@ -126,6 +133,11 @@ const itemSchema = mongoose.Schema(
       required: [true, 'An item must have a warehouse to be delivered to'],
       enum: ['unihan', 'unisgn', 'pacific', 'others'],
     },
+    bill: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'Bill',
+      required: [true, 'An item must belong to a bill'],
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -147,6 +159,73 @@ itemSchema.pre('save', async function (next) {
   this.customId = `ITEM-${res}`;
 
   next();
+});
+
+itemSchema.statics.calcBill = async function (doc) {
+  try {
+    const bill = await Bill.findById(doc.bill).select(
+      'customer taxForCustomer shippingRateToVnInUSD usdVndRate -items -affiliate'
+    );
+
+    // calculate shippingFeeToVnInUSD
+    const shippingFeeToVnInUSD =
+      Math.round(
+        parseFloat(doc.estimatedWeight) *
+          100 *
+          10 *
+          parseFloat(bill.shippingRateToVnInUSD)
+      ) / 1000;
+
+    // calculate totalBillCost after ship
+    const totalBillCost =
+      Math.round(
+        parseFloat(doc.usShippingFee) * MUL +
+          MUL *
+            parseFloat(doc.pricePerItem) *
+            parseFloat(doc.quantity) *
+            (1 + parseFloat(bill.taxForCustomer)) +
+          shippingFeeToVnInUSD * MUL
+      ) / MUL;
+
+    console.log(totalBillCost, 'total bill cost');
+
+    // calculate moneyChargeCustomer after ship
+    const moneyChargeCustomerUSD =
+      Math.round(
+        doc.usShippingFee * MUL +
+          MUL *
+            doc.pricePerItem *
+            doc.quantity *
+            (1 - bill.customer.discountRate[doc.orderedWebsite]) +
+          MUL *
+            parseFloat(bill.taxForCustomer) *
+            (doc.usShippingFee + doc.pricePerItem * doc.quantity) +
+          shippingFeeToVnInUSD * MUL
+      ) / MUL;
+
+    await Bill.findByIdAndUpdate(doc.bill, {
+      $inc: {
+        estimatedWeight: doc.estimatedWeight,
+        remaining:
+          Math.round(
+            parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD
+          ) / MUL,
+        actualBillCost: totalBillCost,
+        moneyChargeCustomerUSD: moneyChargeCustomerUSD,
+        actualChargeCustomer:
+          Math.round(
+            parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD
+          ) / MUL,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+itemSchema.post('save', function (doc) {
+  console.log(doc);
+  this.constructor.calcBill(doc);
 });
 
 itemSchema.statics.createTransaction = async function (id, accountId) {

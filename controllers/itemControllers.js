@@ -135,3 +135,45 @@ exports.refund = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+
+exports.split = catchAsync(async (req, res, next) => {
+  const { quantity } = req.body;
+  const { id } = req.params;
+
+  const current = await Item.findById(id);
+
+  if (current.quantity < quantity) {
+    return next(new AppError('cannot split like this', 400));
+  }
+
+  const promises = [];
+
+  promises.push(
+    Item.create({
+      link: current.link,
+      name: current.name,
+      status: current.status,
+      pricePerItem: current.pricePerItem,
+      tax: current.tax,
+      usShippingFee: current.usShippingFee,
+      estimatedWeight: current.estimatedWeight,
+      actualWeight: current.actualWeight,
+      actualCost: current.actualCost,
+      quantity: quantity,
+      orderedWebsite: current.orderedWebsite,
+      itemType: current.itemType,
+      notes: current.notes,
+      bill: current.bill,
+      warehouse: current.warehouse,
+    })
+  );
+  promises.push(
+    Item.findByIdAndUpdate(id, { quantity: current.quantity - quantity })
+  );
+
+  await Promise.all(promises);
+
+  res.status(201).json({
+    status: 'success',
+  });
+});

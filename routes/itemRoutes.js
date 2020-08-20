@@ -9,6 +9,8 @@ itemRouter.route('/:id/charge').post(itemControllers.chargeMoney);
 
 itemRouter.patch('/:id/refund', itemControllers.refund);
 
+itemRouter.patch('/:id/split', itemControllers.split);
+
 itemRouter
   .route('/')
   .get(itemControllers.getAllItems)

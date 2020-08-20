@@ -61,7 +61,7 @@ const giftCardSchema = mongoose.Schema({
   fromAccount: {
     type: mongoose.Schema.ObjectId,
     ref: 'Account',
-    required: [true, 'A gift card deposit must come from somewhere'],
+    // required: [true, 'A gift card deposit must come from somewhere'],
   },
   toAccount: {
     type: mongoose.Schema.ObjectId,
@@ -71,12 +71,12 @@ const giftCardSchema = mongoose.Schema({
   btcUsdRate: {
     type: mongoose.Decimal128,
     default: 9500,
-    required: [true, 'BTC/USD rate must be input to calc discount rate'],
+    // required: [true, 'BTC/USD rate must be input to calc discount rate'],
   },
   usdVndRate: {
     type: mongoose.Decimal128,
     default: 23700,
-    required: [true, 'USD/VND rate must be input to calc discount rate'],
+    // required: [true, 'USD/VND rate must be input to calc discount rate'],
   },
   hardCardPic: String,
   receiptPic: String,

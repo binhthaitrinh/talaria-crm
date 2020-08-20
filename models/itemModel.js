@@ -29,7 +29,8 @@ const itemSchema = mongoose.Schema(
         'arrived-at-viet-nam',
         'done',
         'returning',
-        'returned',
+        'returned-and-refunded',
+        'refunded',
       ],
       default: 'not-yet-ordered',
     },
@@ -138,6 +139,12 @@ const itemSchema = mongoose.Schema(
       ref: 'Bill',
       required: [true, 'An item must belong to a bill'],
     },
+    partialBalance: [
+      {
+        actualCostRate: mongoose.Decimal128,
+        remainingBalance: mongoose.Decimal128,
+      },
+    ],
   },
   {
     toJSON: { virtuals: true },
@@ -411,6 +418,7 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
   let index = 0;
   let currentGcBal = parseFloat(giftcards[0].remainingBalance);
   const giftCardPromises = [];
+  const partialBalance = [];
 
   // for giftcards that will be exhausted completely
   while (index < gcLength && remainingGcNeeded > currentGcBal) {
@@ -428,6 +436,10 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
             MUL *
             parseFloat(currentPartial.actualCostRate)
         ) / MUL;
+      partialBalance.push({
+        actualCostRate: currentPartial.actualCostRate,
+        remainingBalance: currentPartial.remainingBalance,
+      });
 
       actualCost = Math.round(actualCost * MUL + partActualCost) / MUL;
 
@@ -481,6 +493,10 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
     k < giftcards[index].partialBalance.length &&
     remainingGcNeeded > currentPartial.remainingBalance
   ) {
+    partialBalance.push({
+      actualCostRate: currentPartial.actualCostRate,
+      remainingBalance: currentPartial.remainingBalance,
+    });
     const partActualCost =
       Math.round(
         parseFloat(currentPartial.remainingBalance) *
@@ -522,6 +538,11 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
   ) {
     return new AppError('not enough balance', 400);
   }
+
+  partialBalance.push({
+    actualCostRate: currentPartial.actualCostRate,
+    remainingBalance: remainingGcNeeded,
+  });
 
   // last partial balance
   const partActualCost =
@@ -612,6 +633,7 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
         fromAcctBalance: trans.fromAcctBalance,
         orderDate: Date.now(),
         orderAccount: accountId,
+        partialBalance: partialBalance,
       },
     },
     { returnOriginal: false }

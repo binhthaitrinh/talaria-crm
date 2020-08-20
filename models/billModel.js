@@ -48,7 +48,7 @@ const billSchema = mongoose.Schema(
 
     taxForCustomer: {
       type: mongoose.Decimal128,
-      default: 0.0,
+      default: 0.0875,
       min: [0, 'Tax cannot be negative'],
       max: [1, 'Tax cannot be more than 100%'],
     },

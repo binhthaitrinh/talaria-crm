@@ -31,6 +31,7 @@ const itemSchema = mongoose.Schema(
         'returning',
         'returned-and-refunded',
         'refunded',
+        'lost',
       ],
       default: 'not-yet-ordered',
     },
@@ -139,12 +140,6 @@ const itemSchema = mongoose.Schema(
       ref: 'Bill',
       required: [true, 'An item must belong to a bill'],
     },
-    partialBalance: [
-      {
-        actualCostRate: mongoose.Decimal128,
-        remainingBalance: mongoose.Decimal128,
-      },
-    ],
   },
   {
     toJSON: { virtuals: true },
@@ -178,6 +173,9 @@ itemSchema.statics.calcBill = async function (doc) {
       {
         $match: {
           bill: doc.bill,
+          status: {
+            $ne: 'refunded',
+          },
         },
       },
     ]);
@@ -436,10 +434,6 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
             MUL *
             parseFloat(currentPartial.actualCostRate)
         ) / MUL;
-      partialBalance.push({
-        actualCostRate: currentPartial.actualCostRate,
-        remainingBalance: currentPartial.remainingBalance,
-      });
 
       actualCost = Math.round(actualCost * MUL + partActualCost) / MUL;
 
@@ -493,10 +487,6 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
     k < giftcards[index].partialBalance.length &&
     remainingGcNeeded > currentPartial.remainingBalance
   ) {
-    partialBalance.push({
-      actualCostRate: currentPartial.actualCostRate,
-      remainingBalance: currentPartial.remainingBalance,
-    });
     const partActualCost =
       Math.round(
         parseFloat(currentPartial.remainingBalance) *
@@ -538,11 +528,6 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
   ) {
     return new AppError('not enough balance', 400);
   }
-
-  partialBalance.push({
-    actualCostRate: currentPartial.actualCostRate,
-    remainingBalance: remainingGcNeeded,
-  });
 
   // last partial balance
   const partActualCost =

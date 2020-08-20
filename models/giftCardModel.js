@@ -177,6 +177,10 @@ giftCardSchema.pre('save', async function (next) {
     return next();
   }
 
+  if (this.price.currency === 'usd') {
+    return next();
+  }
+
   // find paxful transactions with remainingBalance > 0,
   // inflow type
   // sorted by createdAt ASC, _id ASC

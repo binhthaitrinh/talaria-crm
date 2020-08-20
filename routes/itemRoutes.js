@@ -7,6 +7,8 @@ itemRouter.patch('/:id/updateCostInfo', itemControllers.updateCostInfo);
 
 itemRouter.route('/:id/charge').post(itemControllers.chargeMoney);
 
+itemRouter.patch('/:id/refund', itemControllers.refund);
+
 itemRouter
   .route('/')
   .get(itemControllers.getAllItems)

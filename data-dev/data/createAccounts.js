@@ -80,7 +80,7 @@ const accounts = [
   {
     accountWebsite: 'others',
     loginID: 'VND_ACCOUNT',
-    balance: 0,
+    balance: 100000000,
     notes: '',
     accountType: accountTypes[0],
     status: 'active',

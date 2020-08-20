@@ -67,7 +67,15 @@ exports.deleteOne = catchAsync(async (req, res, next) => {
 exports.refund = catchAsync(async (req, res, next) => {
   // split items based on number of refunded item on req.body
   // new items created have status of refunded (same as req.body.itemID)
-  const currentItem = await Item.findById(req.body.itemID);
+  const currentItem = await Item.findById(req.params.id);
+
+  if (currentItem.status === 'not-yet-ordered') {
+    return next(new AppError('This item hasnot been bought, so cannot return'));
+  }
+
+  if (currentItem.quantity < req.body.quantity) {
+    return next(new AppError('cannot return more quantity than ordered'));
+  }
 
   await Item.create({
     link: currentItem.link,
@@ -83,6 +91,8 @@ exports.refund = catchAsync(async (req, res, next) => {
     invoiceLink: currentItem.invoiceLink,
     orderAccount: currentItem.orderAccount._id,
     notes: `refund for bill id ${currentItem.bill._id}`,
+    bill: currentItem.bill,
+    warehouse: currentItem.warehouse,
   });
 
   // create gift card
@@ -96,13 +106,32 @@ exports.refund = catchAsync(async (req, res, next) => {
       currency: 'usd',
     },
     giftCardValue:
-      parseFloat(currentItem.pricePerItem) *
-      parseFloat(req.body.quantity) *
+      (parseFloat(currentItem.pricePerItem) * parseFloat(req.body.quantity) +
+        parseFloat(currentItem.usShippingFee)) *
       (1 + parseFloat(currentItem.tax)),
     giftCardType: currentItem.orderedWebsite,
-    partialBalance: currentItem.partialBalance,
-    toAccount: currentItem.account._id,
+    toAccount: currentItem.orderAccount._id,
+    partialBalance: [
+      {
+        actualCostRate:
+          parseFloat(currentItem.actualCost) /
+          ((parseFloat(currentItem.pricePerItem) *
+            parseFloat(currentItem.quantity) +
+            parseFloat(currentItem.usShippingFee)) *
+            (1 + parseFloat(currentItem.tax))),
+        remainingBalance:
+          (parseFloat(req.body.quantity) / parseFloat(currentItem.quantity)) *
+          ((parseFloat(currentItem.pricePerItem) *
+            parseFloat(currentItem.quantity) +
+            parseFloat(currentItem.usShippingFee)) *
+            (1 + parseFloat(currentItem.tax))),
+      },
+    ],
   });
 
   // create transaction
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
 });

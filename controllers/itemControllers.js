@@ -65,7 +65,6 @@ exports.deleteOne = catchAsync(async (req, res, next) => {
 
 // for refund without return
 exports.refund = catchAsync(async (req, res, next) => {
-  // split items based on number of refunded item on req.body
   // new items created have status of refunded (same as req.body.itemID)
   const currentItem = await Item.findById(req.params.id);
 
@@ -73,27 +72,7 @@ exports.refund = catchAsync(async (req, res, next) => {
     return next(new AppError('This item hasnot been bought, so cannot return'));
   }
 
-  if (currentItem.quantity < req.body.quantity) {
-    return next(new AppError('cannot return more quantity than ordered'));
-  }
-
-  await Item.create({
-    link: currentItem.link,
-    name: currentItem.name,
-    status: 'refunded',
-    pricePerItem: currentItem.pricePerItem,
-    tax: currentItem.tax,
-    usShippingFee: currentItem.usShippingFee,
-    estimatedWeight: currentItem.estimatedWeight,
-    actualWeight: currentItem.actualWeight,
-    quantity: req.body.quantity,
-    orderedWebsite: currentItem.orderedWebsite,
-    invoiceLink: currentItem.invoiceLink,
-    orderAccount: currentItem.orderAccount._id,
-    notes: `refund for bill id ${currentItem.bill._id}`,
-    bill: currentItem.bill,
-    warehouse: currentItem.warehouse,
-  });
+  await Item.findByIdAndUpdate(req.params.id, { status: 'refunded' });
 
   // create gift card
   await Giftcard.create({
@@ -132,7 +111,6 @@ exports.refund = catchAsync(async (req, res, next) => {
   // create transaction
   res.status(204).json({
     status: 'success',
-    data: null,
   });
 });
 
@@ -172,6 +150,33 @@ exports.split = catchAsync(async (req, res, next) => {
   );
 
   await Promise.all(promises);
+
+  res.status(201).json({
+    status: 'success',
+  });
+});
+
+exports.generousSeller = catchAsync(async (req, res, next) => {
+  const { quantity } = req.body;
+  const item = await Item.findById(req.params.id);
+
+  await Item.create({
+    link: item.link,
+    name: item.name,
+    status: 'in-inventory',
+    pricePerItem: item.pricePerItem,
+    tax: item.tax,
+    usShippingFee: item.usShippingFee,
+    estimatedWeight: item.estimatedWeight,
+    actualWeight: item.actualWeight,
+    actualCost: 0,
+    quantity: quantity,
+    orderedWebsite: item.orderedWebsite,
+    itemType: item.itemType,
+    notes: item.notes,
+    bill: item.bill,
+    warehouse: item.warehouse,
+  });
 
   res.status(201).json({
     status: 'success',

@@ -134,6 +134,24 @@ giftCardSchema.pre('save', async function (next) {
 
   // const paxfuls = await paxfulQuery.exec();
   // console.log(paxfuls);
+  if (this.price.currency === 'usd') {
+    const trans = await Transaction.create({
+      toAccount: this.toAccount,
+
+      amountReceived: {
+        value: this.giftCardValue * 1,
+        currency: 'usd',
+      },
+    });
+
+    this.toAcctBalance = trans.toAcctBalance;
+
+    if (!trans) {
+      return next(new AppError('something is wrong', 400));
+    }
+
+    return next();
+  }
 
   const trans = await Transaction.create({
     fromAccount: this.fromAccount,
@@ -174,10 +192,6 @@ giftCardSchema.pre('save', async function (next) {
       parseFloat(this.price.value) /
         (parseFloat(this.usdVndRate) * parseFloat(this.giftCardValue));
 
-    return next();
-  }
-
-  if (this.price.currency === 'usd') {
     return next();
   }
 

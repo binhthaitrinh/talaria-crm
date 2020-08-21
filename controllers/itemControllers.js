@@ -63,7 +63,7 @@ exports.deleteOne = catchAsync(async (req, res, next) => {
   });
 });
 
-// for refund without return
+// for refund
 exports.refund = catchAsync(async (req, res, next) => {
   // new items created have status of refunded (same as req.body.itemID)
   const currentItem = await Item.findById(req.params.id);
@@ -72,7 +72,7 @@ exports.refund = catchAsync(async (req, res, next) => {
     return next(new AppError('This item hasnot been bought, so cannot return'));
   }
 
-  await Item.findByIdAndUpdate(req.params.id, { status: 'refunded' });
+  // await Item.findByIdAndUpdate(req.params.id, { status: 'refunded' });
 
   // create gift card
   await Giftcard.create({
@@ -90,6 +90,10 @@ exports.refund = catchAsync(async (req, res, next) => {
       (1 + parseFloat(currentItem.tax)),
     giftCardType: currentItem.orderedWebsite,
     toAccount: currentItem.orderAccount._id,
+    remainingBalance:
+      (parseFloat(currentItem.pricePerItem) * parseFloat(req.body.quantity) +
+        parseFloat(currentItem.usShippingFee)) *
+      (1 + parseFloat(currentItem.tax)),
     partialBalance: [
       {
         actualCostRate:
@@ -99,11 +103,10 @@ exports.refund = catchAsync(async (req, res, next) => {
             parseFloat(currentItem.usShippingFee)) *
             (1 + parseFloat(currentItem.tax))),
         remainingBalance:
-          (parseFloat(req.body.quantity) / parseFloat(currentItem.quantity)) *
-          ((parseFloat(currentItem.pricePerItem) *
+          (parseFloat(currentItem.pricePerItem) *
             parseFloat(currentItem.quantity) +
             parseFloat(currentItem.usShippingFee)) *
-            (1 + parseFloat(currentItem.tax))),
+          (1 + parseFloat(currentItem.tax)),
       },
     ],
   });
@@ -143,6 +146,7 @@ exports.split = catchAsync(async (req, res, next) => {
       notes: current.notes,
       bill: current.bill,
       warehouse: current.warehouse,
+      chargeable: current.chargeable,
     })
   );
   promises.push(
@@ -153,6 +157,36 @@ exports.split = catchAsync(async (req, res, next) => {
 
   res.status(201).json({
     status: 'success',
+  });
+});
+
+exports.duplicate = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  const current = await Item.findById(id);
+
+  const item = await Item.create({
+    link: current.link,
+    name: current.name,
+    status: current.status,
+    pricePerItem: current.pricePerItem,
+    tax: current.tax,
+    usShippingFee: current.usShippingFee,
+    estimatedWeight: current.estimatedWeight,
+    actualWeight: current.actualWeight,
+    actualCost: current.actualCost,
+    quantity: current.quantity,
+    orderedWebsite: current.orderedWebsite,
+    itemType: current.itemType,
+    notes: current.notes,
+    bill: current.bill,
+    warehouse: current.warehouse,
+    chargeable: current.chargeable,
+  });
+
+  res.status(201).json({
+    status: 'success',
+    data: item,
   });
 });
 
@@ -173,8 +207,7 @@ exports.generousSeller = catchAsync(async (req, res, next) => {
     quantity: quantity,
     orderedWebsite: item.orderedWebsite,
     itemType: item.itemType,
-    notes: item.notes,
-    bill: item.bill,
+    notes: `generous offer from bill ${item.bill}`,
     warehouse: item.warehouse,
   });
 

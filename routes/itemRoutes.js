@@ -11,6 +11,10 @@ itemRouter.patch('/:id/refund', itemControllers.refund);
 
 itemRouter.patch('/:id/split', itemControllers.split);
 
+itemRouter.post('/:id/generousSeller', itemControllers.generousSeller);
+
+itemRouter.post('/:id/duplicate', itemControllers.duplicate);
+
 itemRouter
   .route('/')
   .get(itemControllers.getAllItems)

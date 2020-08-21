@@ -30,7 +30,8 @@ const itemSchema = mongoose.Schema(
         'done',
         'returning',
         'returned',
-        'refunded',
+        'no-return-refunded',
+        'return-refunded',
         'lost',
         'in-inventory',
       ],
@@ -139,7 +140,10 @@ const itemSchema = mongoose.Schema(
     bill: {
       type: mongoose.Schema.ObjectId,
       ref: 'Bill',
-      required: [true, 'An item must belong to a bill'],
+    },
+    chargeable: {
+      type: Boolean,
+      default: true,
     },
   },
   {
@@ -174,9 +178,7 @@ itemSchema.statics.calcBill = async function (doc) {
       {
         $match: {
           bill: doc.bill,
-          status: {
-            $ne: 'refunded',
-          },
+          chargable: true,
         },
       },
     ]);

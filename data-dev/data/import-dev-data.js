@@ -8,6 +8,7 @@ const Paxful = require('../../models/paxfulModel');
 const GiftCard = require('../../models/giftCardModel');
 const Bill = require('../../models/billModel');
 const Compensation = require('../../models/compensationModel');
+const Customer = require('../../models/customerModel');
 
 // Config path to config file
 dotenv.config({ path: `${__dirname}/../../config.env` });
@@ -112,6 +113,8 @@ const deleteData = async () => {
       await Bill.deleteMany();
     } else if (process.argv[3] === '--compensation') {
       await Compensation.deleteMany();
+    } else if (process.argv[3] === '--customer') {
+      await Customer.deleteMany();
     }
 
     process.exit();

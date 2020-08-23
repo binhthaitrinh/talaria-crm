@@ -42,6 +42,7 @@ const itemSchema = mongoose.Schema(
       required: [true, 'An Item must have a price'],
       min: [0, 'Price cannot be negative'],
     },
+    actualPricePerItem: mongoose.Decimal128,
     tax: {
       type: mongoose.Decimal128,
       default: 0.0,
@@ -157,6 +158,12 @@ itemSchema.pre(/^find/, function (next) {
     path: 'orderAccount',
     select: 'balance loginID',
   });
+
+  next();
+});
+
+itemSchema.pre('save', function (next) {
+  this.actualPricePerItem = this.pricePerItem;
 
   next();
 });
@@ -305,7 +312,11 @@ itemSchema.statics.createTransaction = async function (id, accountId) {
           $add: [
             '$usShippingFee',
             {
-              $multiply: ['$quantity', '$pricePerItem', { $add: [1, '$tax'] }],
+              $multiply: [
+                '$quantity',
+                '$actualPricePerItem',
+                { $add: [1, '$tax'] },
+              ],
             },
           ],
         },

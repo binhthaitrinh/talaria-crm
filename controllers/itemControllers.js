@@ -85,25 +85,27 @@ exports.refund = catchAsync(async (req, res, next) => {
       currency: 'usd',
     },
     giftCardValue:
-      (parseFloat(currentItem.pricePerItem) * parseFloat(req.body.quantity) +
+      (parseFloat(currentItem.actualPricePerItem) *
+        parseFloat(req.body.quantity) +
         parseFloat(currentItem.usShippingFee)) *
       (1 + parseFloat(currentItem.tax)),
     giftCardType: currentItem.orderedWebsite,
     toAccount: currentItem.orderAccount._id,
     remainingBalance:
-      (parseFloat(currentItem.pricePerItem) * parseFloat(req.body.quantity) +
+      (parseFloat(currentItem.actualPricePerItem) *
+        parseFloat(req.body.quantity) +
         parseFloat(currentItem.usShippingFee)) *
       (1 + parseFloat(currentItem.tax)),
     partialBalance: [
       {
         actualCostRate:
           parseFloat(currentItem.actualCost) /
-          ((parseFloat(currentItem.pricePerItem) *
+          ((parseFloat(currentItem.actualPricePerItem) *
             parseFloat(currentItem.quantity) +
             parseFloat(currentItem.usShippingFee)) *
             (1 + parseFloat(currentItem.tax))),
         remainingBalance:
-          (parseFloat(currentItem.pricePerItem) *
+          (parseFloat(currentItem.actualPricePerItem) *
             parseFloat(currentItem.quantity) +
             parseFloat(currentItem.usShippingFee)) *
           (1 + parseFloat(currentItem.tax)),
@@ -139,7 +141,9 @@ exports.split = catchAsync(async (req, res, next) => {
       usShippingFee: current.usShippingFee,
       estimatedWeight: current.estimatedWeight,
       actualWeight: current.actualWeight,
-      actualCost: current.actualCost,
+      actualCost:
+        (parseFloat(current.actualCost) * parseFloat(quantity)) /
+        parseFloat(current.quantity),
       quantity: quantity,
       orderedWebsite: current.orderedWebsite,
       itemType: current.itemType,
@@ -150,7 +154,13 @@ exports.split = catchAsync(async (req, res, next) => {
     })
   );
   promises.push(
-    Item.findByIdAndUpdate(id, { quantity: current.quantity - quantity })
+    Item.findByIdAndUpdate(id, {
+      quantity: current.quantity - quantity,
+      actualCost:
+        (parseFloat(current.actualCost) *
+          (parseFloat(current.quantity) - parseFloat(quantity))) /
+        parseFloat(current.quantity),
+    })
   );
 
   await Promise.all(promises);

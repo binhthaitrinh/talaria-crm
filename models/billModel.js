@@ -41,9 +41,16 @@ const billSchema = mongoose.Schema(
     },
 
     estimatedWeight: mongoose.Decimal128,
-    shippingRateToVnInUSD: {
-      type: mongoose.Decimal128,
-      default: 12,
+    shippingRateToVn: {
+      currency: {
+        type: String,
+        enum: ['usd', 'vnd'],
+        default: 'usd',
+      },
+      value: {
+        type: mongoose.Decimal128,
+        default: 12,
+      },
     },
 
     taxForCustomer: {
@@ -126,6 +133,93 @@ billSchema.post('save', async function () {
     //  affiliate: this.affiliate,
   });
 });
+
+billSchema.statics.customerPay = async function (id, amount) {
+  // find the bill doc to be paid
+  const bill = await this.findOne({ _id: id }).select(
+    'moneyReceived remaining actualChargeCustomer status -items -customer'
+  );
+
+  if (bill.status === 'fully-paid') {
+    return new AppError('Bill already paid', 400);
+  }
+
+  // // update amountPaid
+  // const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
+
+  const moneyReceived =
+    Math.round(
+      parseFloat(bill.moneyReceived) * 100000000 +
+        parseFloat(amount) * 100000000
+    ) / 100000000;
+
+  // update remaining
+  const remaining =
+    Math.round(
+      parseFloat(bill.actualChargeCustomer) * 100000000 -
+        parseFloat(moneyReceived) * 100000000
+    ) / 100000000;
+
+  const newBill = await this.findOneAndUpdate(
+    { _id: id },
+    {
+      $set: {
+        // moneyReceived,
+        remaining,
+        status: remaining > 0 ? 'partially-paid' : 'fully-paid',
+        moneyReceived,
+      },
+    },
+    { returnOriginal: false }
+  );
+
+  const transaction = await Transaction.create({
+    toAccount: '5f24a4e06666190fbdf6e7bc',
+    amountReceived: {
+      value: amount,
+      currency: 'vnd',
+    },
+    bill: id,
+  });
+
+  // await Account.findOneAndUpdate(
+  //   { loginID: 'VND_ACCOUNT' },
+  //   {
+  //     $inc: {
+  //       balance: amount * 1,
+  //     },
+  //   }
+  // );
+
+  if (newBill.status === 'fully-paid') {
+    await Compensation.findOneAndUpdate(
+      { affiliate: bill.affiliate._id, bill: bill._id },
+      {
+        amount:
+          Math.round(
+            parseFloat(bill.actualChargeCustomer) *
+              100000000 *
+              parseFloat(bill.affiliate.commissionRate)
+          ) / 100000000,
+        status: 'pending',
+      }
+    );
+    // await Compensation.create({
+    //   bill: id,
+    //   status: 'pending',
+    //   affiliate: bill.affiliate._id,
+    //   amount:
+    //     Math.round(
+    //       parseFloat(bill.actualChargeCustomer) *
+    //         100000000 *
+    //         parseFloat(bill.affiliate.commissionRate)
+    //     ) / 100000000,
+    // });
+  }
+
+  // update bill status
+  return newBill;
+};
 
 const billModel = mongoose.model('Bill', billSchema);
 

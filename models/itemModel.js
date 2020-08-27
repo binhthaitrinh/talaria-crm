@@ -178,7 +178,7 @@ itemSchema.pre('save', async function (next) {
 itemSchema.statics.calcBill = async function (doc) {
   try {
     const bill = await Bill.findById(doc.bill).select(
-      'customer taxForCustomer shippingRateToVnInUSD usdVndRate moneyReceived -items -affiliate'
+      'customer taxForCustomer shippingRateToVn usdVndRate moneyReceived -items -affiliate'
     );
 
     const items = await this.aggregate([
@@ -193,12 +193,7 @@ itemSchema.statics.calcBill = async function (doc) {
     let totalBillCost = 0;
     let moneyChargeCustomerUSD = 0;
     let totalEstimatedWeight = 0;
-    const {
-      customer,
-      taxForCustomer,
-      shippingRateToVnInUSD,
-      usdVndRate,
-    } = bill;
+    const { customer, taxForCustomer, shippingRateToVn, usdVndRate } = bill;
 
     items.forEach((item) => {
       const {
@@ -237,13 +232,26 @@ itemSchema.statics.calcBill = async function (doc) {
     });
 
     // calculate shippingFeeToVnInUSD
-    const shippingFeeToVnInUSD =
-      Math.round(
-        parseFloat(totalEstimatedWeight) *
-          100 *
-          10 *
-          parseFloat(shippingRateToVnInUSD)
-      ) / 1000;
+    let shippingFeeToVnInUSD;
+
+    if (shippingRateToVn.currency === 'usd') {
+      shippingFeeToVnInUSD =
+        Math.round(
+          parseFloat(totalEstimatedWeight) *
+            100 *
+            10 *
+            parseFloat(shippingRateToVn.value)
+        ) / 1000;
+    } else {
+      shippingFeeToVnInUSD =
+        Math.round(
+          (parseFloat(totalEstimatedWeight) *
+            100 *
+            10 *
+            parseFloat(shippingRateToVn.value)) /
+            parseFloat(usdVndRate)
+        ) / 1000;
+    }
 
     // calculate totalBillCost after ship
     totalBillCost =

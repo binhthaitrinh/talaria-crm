@@ -76,7 +76,7 @@ const billSchema = mongoose.Schema(
       unique: true,
     },
     notes: String,
-
+    commissionForAffiliate: mongoose.Decimal128,
     // actualCost: mongoose.Decimal128,
   },
   {
@@ -134,10 +134,12 @@ billSchema.post('save', async function () {
   });
 });
 
+// TODO: handle when no affiliate is added yet
+
 billSchema.statics.customerPay = async function (id, amount) {
   // find the bill doc to be paid
   const bill = await this.findOne({ _id: id }).select(
-    'moneyReceived remaining actualChargeCustomer status -items -customer'
+    'moneyReceived remaining actualChargeCustomer status -customer'
   );
 
   if (bill.status === 'fully-paid') {
@@ -193,7 +195,7 @@ billSchema.statics.customerPay = async function (id, amount) {
 
   if (newBill.status === 'fully-paid') {
     await Compensation.findOneAndUpdate(
-      { affiliate: bill.affiliate._id, bill: bill._id },
+      { bill: bill._id },
       {
         amount:
           Math.round(

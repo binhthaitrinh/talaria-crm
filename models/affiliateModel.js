@@ -18,10 +18,34 @@ const affiliateSchema = mongoose.Schema({
   ],
   phoneNumber: String,
   commissionRate: {
-    type: mongoose.Decimal128,
-    default: 0,
-    min: [0, 'Commission Rate must be positive'],
-    max: [1, 'Commission Rate cannot be more than 100%'],
+    amazon: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    sephora: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    ebay: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    bestbuy: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    costco: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    walmart: {
+      type: mongoose.Decimal128,
+      default: 0.08,
+    },
+    assisting: {
+      type: mongoose.Decimal128,
+      default: 0.02,
+    },
   },
 
   bankAccounts: [

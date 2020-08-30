@@ -146,6 +146,7 @@ const itemSchema = mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    commissionRateForAffiliate: mongoose.Decimal128,
   },
   {
     toJSON: { virtuals: true },
@@ -178,8 +179,12 @@ itemSchema.pre('save', async function (next) {
 itemSchema.statics.calcBill = async function (doc) {
   try {
     const bill = await Bill.findById(doc.bill).select(
-      'customer taxForCustomer shippingRateToVn usdVndRate moneyReceived -items -affiliate'
+      'customer taxForCustomer shippingRateToVn usdVndRate moneyReceived -items'
     );
+
+    if (!bill) {
+      return new AppError('Bill not found', 400);
+    }
 
     const items = await this.aggregate([
       {
@@ -193,7 +198,14 @@ itemSchema.statics.calcBill = async function (doc) {
     let totalBillCost = 0;
     let moneyChargeCustomerUSD = 0;
     let totalEstimatedWeight = 0;
-    const { customer, taxForCustomer, shippingRateToVn, usdVndRate } = bill;
+    let commissionForAffiliate = 0;
+    const {
+      customer,
+      taxForCustomer,
+      shippingRateToVn,
+      usdVndRate,
+      affiliate,
+    } = bill;
 
     items.forEach((item) => {
       const {
@@ -229,6 +241,16 @@ itemSchema.statics.calcBill = async function (doc) {
 
       totalEstimatedWeight =
         Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
+
+      if (item.commissionRateForAffiliate === undefined) {
+        commissionForAffiliate +=
+          affiliate.commissionRate[orderedWebsite] *
+          (pricePerItem * quantity + usShippingFee);
+      } else {
+        commissionForAffiliate +=
+          item.commissionForAffiliate *
+          (pricePerItem * quantity + usShippingFee);
+      }
     });
 
     // calculate shippingFeeToVnInUSD
@@ -264,6 +286,8 @@ itemSchema.statics.calcBill = async function (doc) {
       Math.round(moneyChargeCustomerUSD * MUL + shippingFeeToVnInUSD * MUL) /
       MUL;
 
+    commissionForAffiliate *= usdVndRate;
+
     await Bill.findByIdAndUpdate(doc.bill, {
       estimatedWeight: totalEstimatedWeight,
       remaining:
@@ -276,6 +300,7 @@ itemSchema.statics.calcBill = async function (doc) {
       actualChargeCustomer:
         Math.round(parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD) /
         MUL,
+      commissionForAffiliate: commissionForAffiliate,
     });
   } catch (err) {
     console.log(err);
@@ -296,7 +321,9 @@ itemSchema.post(/^findOneAnd/, async function () {
 
 itemSchema.post('save', function (doc) {
   console.log(doc);
-  this.constructor.calcBill(doc);
+  if (doc.bill) {
+    this.constructor.calcBill(doc);
+  }
 });
 
 itemSchema.statics.createTransaction = async function (id, accountId) {

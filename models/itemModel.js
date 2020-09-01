@@ -198,13 +198,13 @@ itemSchema.statics.calcBill = async function (doc) {
     let totalBillCost = 0;
     let moneyChargeCustomerUSD = 0;
     let totalEstimatedWeight = 0;
-    let commissionForAffiliate = 0;
+    // let commissionForAffiliate = 0;
     const {
       customer,
       taxForCustomer,
       shippingRateToVn,
       usdVndRate,
-      affiliate,
+      // affiliate,
     } = bill;
 
     items.forEach((item) => {
@@ -242,15 +242,15 @@ itemSchema.statics.calcBill = async function (doc) {
       totalEstimatedWeight =
         Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
 
-      if (item.commissionRateForAffiliate === undefined) {
-        commissionForAffiliate +=
-          affiliate.commissionRate[orderedWebsite] *
-          (pricePerItem * quantity + usShippingFee);
-      } else {
-        commissionForAffiliate +=
-          item.commissionForAffiliate *
-          (pricePerItem * quantity + usShippingFee);
-      }
+      // if (item.commissionRateForAffiliate === undefined) {
+      //   commissionForAffiliate +=
+      //     affiliate.commissionRate[orderedWebsite] *
+      //     (pricePerItem * quantity + usShippingFee);
+      // } else {
+      //   commissionForAffiliate +=
+      //     item.commissionForAffiliate *
+      //     (pricePerItem * quantity + usShippingFee);
+      // }
     });
 
     // calculate shippingFeeToVnInUSD
@@ -286,7 +286,7 @@ itemSchema.statics.calcBill = async function (doc) {
       Math.round(moneyChargeCustomerUSD * MUL + shippingFeeToVnInUSD * MUL) /
       MUL;
 
-    commissionForAffiliate *= usdVndRate;
+    // commissionForAffiliate *= usdVndRate;
 
     await Bill.findByIdAndUpdate(doc.bill, {
       estimatedWeight: totalEstimatedWeight,
@@ -300,7 +300,7 @@ itemSchema.statics.calcBill = async function (doc) {
       actualChargeCustomer:
         Math.round(parseFloat(bill.usdVndRate) * MUL * moneyChargeCustomerUSD) /
         MUL,
-      commissionForAffiliate: commissionForAffiliate,
+      // commissionForAffiliate: commissionForAffiliate,
     });
   } catch (err) {
     console.log(err);

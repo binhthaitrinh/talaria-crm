@@ -89,3 +89,17 @@ exports.updatePrice = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.calcCommission = catchAsync(async (req, res, next) => {
+  const bill = await Bill.findById(req.params.id);
+
+  console.log(bill);
+
+  const doc = await Bill.calcCommission(bill);
+
+  console.log(doc);
+  return res.status(200).json({
+    status: 'success',
+    data: null,
+  });
+});

@@ -2,8 +2,11 @@ const express = require('express');
 
 const billRouter = express.Router({ mergeParams: true });
 const billControllers = require('../controllers/billControllers');
+const catchAsync = require('../utils/catchAsync');
 
 billRouter.patch('/:id/updatePrice', billControllers.updatePrice);
+
+billRouter.patch('/:id/commissionForAffiliate', billControllers.calcCommission);
 
 billRouter
   .route('/:id')

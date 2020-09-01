@@ -104,7 +104,7 @@ billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'items',
     select:
-      'name quantity pricePerItem createdAt usShippingFee orderedWebsite estimatedWeight -orderAccount',
+      'name tax quantity pricePerItem createdAt usShippingFee orderedWebsite estimatedWeight -orderAccount',
   });
 
   next();
@@ -221,6 +221,46 @@ billSchema.statics.customerPay = async function (id, amount) {
 
   // update bill status
   return newBill;
+};
+
+// TODO: write function to calculate commission for affiliate
+billSchema.statics.calcCommission = async function (doc) {
+  if (!doc.affiliate) {
+    return new AppError('Cannot calculate commission without affiliate', 400);
+  }
+
+  let commissionForAffiliate = 0;
+  doc.items.forEach((item) => {
+    console.log(item);
+    console.log(item.commissionRateForAffiliate);
+    let singleCom;
+    if (item.commissionRateForAffiliate !== undefined) {
+      singleCom =
+        parseFloat(item.commissionRateForAffiliate) *
+        (parseFloat(item.pricePerItem) *
+          parseFloat(item.quantity) *
+          (1 + parseFloat(item.tax) * 1) +
+          parseFloat(item.usShippingFee) * 1);
+    } else {
+      console.log(
+        'asdqw',
+        parseFloat(doc.affiliate.commissionRate[item.orderedWebsite])
+      );
+      singleCom =
+        parseFloat(doc.affiliate.commissionRate[item.orderedWebsite]) *
+        (parseFloat(item.pricePerItem) *
+          parseFloat(item.quantity) *
+          (1 + parseFloat(item.tax) * 1) +
+          parseFloat(item.usShippingFee) * 1);
+      console.log('asdqw', parseFloat(singleCom));
+    }
+    commissionForAffiliate += singleCom;
+  });
+
+  await this.findOneAndUpdate(
+    { _id: doc._id },
+    { commissionForAffiliate: commissionForAffiliate }
+  );
 };
 
 const billModel = mongoose.model('Bill', billSchema);

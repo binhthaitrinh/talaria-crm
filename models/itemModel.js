@@ -147,6 +147,17 @@ const itemSchema = mongoose.Schema(
       default: true,
     },
     commissionRateForAffiliate: mongoose.Decimal128,
+    shippingExtraBase: {
+      unit: {
+        type: String,
+        enum: ['usd', 'vnd', '%'],
+        default: 'usd',
+      },
+      value: {
+        type: Number,
+        default: 0,
+      },
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -198,12 +209,14 @@ itemSchema.statics.calcBill = async function (doc) {
     let totalBillCost = 0;
     let moneyChargeCustomerUSD = 0;
     let totalEstimatedWeight = 0;
+    let totalShippingExtra = 0;
     // let commissionForAffiliate = 0;
     const {
       customer,
       taxForCustomer,
       shippingRateToVn,
       usdVndRate,
+
       // affiliate,
     } = bill;
 
@@ -214,7 +227,18 @@ itemSchema.statics.calcBill = async function (doc) {
         quantity,
         orderedWebsite,
         estimatedWeight,
+        shippingExtraBase,
       } = item;
+
+      // TODO: calc shipping Extra Fee
+      if (shippingExtraBase.unit === 'usd') {
+        totalShippingExtra += shippingExtraBase.value * quantity;
+      } else if (shippingExtraBase.unit === 'vnd') {
+        totalShippingExtra += (shippingExtraBase.value * quantity) / usdVndRate;
+      } else if (shippingExtraBase.unit === '%') {
+        totalShippingExtra +=
+          (pricePerItem * quantity * shippingExtraBase.value) / 100;
+      }
 
       totalBillCost =
         Math.round(
@@ -277,14 +301,21 @@ itemSchema.statics.calcBill = async function (doc) {
 
     // calculate totalBillCost after ship
     totalBillCost =
-      Math.round(totalBillCost * MUL + shippingFeeToVnInUSD * MUL) / MUL;
+      Math.round(
+        totalBillCost * MUL +
+          shippingFeeToVnInUSD * MUL +
+          totalShippingExtra * MUL
+      ) / MUL;
 
     console.log(totalBillCost, 'total bill cost');
 
     // calculate moneyChargeCustomer after ship
     moneyChargeCustomerUSD =
-      Math.round(moneyChargeCustomerUSD * MUL + shippingFeeToVnInUSD * MUL) /
-      MUL;
+      Math.round(
+        moneyChargeCustomerUSD * MUL +
+          shippingFeeToVnInUSD * MUL +
+          totalShippingExtra * MUL
+      ) / MUL;
 
     // commissionForAffiliate *= usdVndRate;
 

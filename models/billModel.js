@@ -77,6 +77,7 @@ const billSchema = mongoose.Schema(
     },
     notes: String,
     commissionForAffiliate: mongoose.Decimal128,
+
     // actualCost: mongoose.Decimal128,
   },
   {

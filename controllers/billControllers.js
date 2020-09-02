@@ -1,5 +1,6 @@
 const factory = require('./handleFactory');
 const Bill = require('../models/billModel');
+const Item = require('../models/itemModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 

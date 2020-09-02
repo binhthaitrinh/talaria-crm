@@ -3,7 +3,7 @@ const itemControllers = require('../controllers/itemControllers');
 
 const itemRouter = express.Router();
 
-itemRouter.patch('/:id/updateCostInfo', itemControllers.updateCostInfo);
+// itemRouter.patch('/:id/updateCostInfo', itemControllers.updateCostInfo);
 
 itemRouter.route('/:id/charge').post(itemControllers.chargeMoney);
 

@@ -105,7 +105,7 @@ billSchema.pre(/^find/, function (next) {
   this.populate({
     path: 'items',
     select:
-      'name tax quantity pricePerItem createdAt usShippingFee orderedWebsite estimatedWeight -orderAccount',
+      'name tax quantity pricePerItem createdAt usShippingFee orderedWebsite estimatedWeightPerItem -orderAccount',
   });
 
   next();

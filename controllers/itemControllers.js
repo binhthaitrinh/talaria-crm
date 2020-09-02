@@ -26,25 +26,25 @@ exports.chargeMoney = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.updateCostInfo = catchAsync(async (req, res, next) => {
-  const item = await Item.findById(req.params.id).select(
-    'tax usShippingFee shippingToVnFee estimatedWeight quantity pricePerItem'
-  );
+// exports.updateCostInfo = catchAsync(async (req, res, next) => {
+//   const item = await Item.findById(req.params.id).select(
+//     'tax usShippingFee shippingToVnFee estimatedWeightPerItemPerItem quantity pricePerItem'
+//   );
 
-  // update cost info
-  item.tax = req.body.tax || item.tax;
-  item.usShippingFee = req.body.usShippingFee || item.usShippingFee;
-  item.shippingToVNFee = req.body.shippingToVNFee || item.shippingToVNFee;
-  item.estimatedWeight = req.body.estimatedWeight || item.estimatedWeight;
-  item.quantity = req.body.quantity || item.quantity;
-  item.pricePerItem = req.body.pricePerItem || item.pricePerItem;
+//   // update cost info
+//   item.tax = req.body.tax || item.tax;
+//   item.usShippingFee = req.body.usShippingFee || item.usShippingFee;
+//   item.shippingToVNFee = req.body.shippingToVNFee || item.shippingToVNFee;
+//   item.estimatedWeightPerItem = req.body.estimatedWeightPerItem || item.estimatedWeightPerItem;
+//   item.quantity = req.body.quantity || item.quantity;
+//   item.pricePerItem = req.body.pricePerItem || item.pricePerItem;
 
-  await item.save();
+//   await item.save();
 
-  res.status(200).json({
-    status: 'success',
-  });
-});
+//   res.status(200).json({
+//     status: 'success',
+//   });
+// });
 
 exports.updateOne = factory.updateOne(Item);
 
@@ -139,8 +139,8 @@ exports.split = catchAsync(async (req, res, next) => {
       pricePerItem: current.pricePerItem,
       tax: current.tax,
       usShippingFee: current.usShippingFee,
-      estimatedWeight: current.estimatedWeight,
-      actualWeight: current.actualWeight,
+      estimatedWeightPerItem: current.estimatedWeightPerItem,
+      actuelWeightPerItem: current.actuelWeightPerItem,
       actualCost:
         (parseFloat(current.actualCost) * parseFloat(quantity)) /
         parseFloat(current.quantity),
@@ -182,8 +182,8 @@ exports.duplicate = catchAsync(async (req, res, next) => {
     pricePerItem: current.pricePerItem,
     tax: current.tax,
     usShippingFee: current.usShippingFee,
-    estimatedWeight: current.estimatedWeight,
-    actualWeight: current.actualWeight,
+    estimatedWeightPerItem: current.estimatedWeightPerItem,
+    actuelWeightPerItem: current.actuelWeightPerItem,
     actualCost: current.actualCost,
     quantity: current.quantity,
     orderedWebsite: current.orderedWebsite,
@@ -211,8 +211,8 @@ exports.generousSeller = catchAsync(async (req, res, next) => {
     pricePerItem: item.pricePerItem,
     tax: item.tax,
     usShippingFee: item.usShippingFee,
-    estimatedWeight: item.estimatedWeight,
-    actualWeight: item.actualWeight,
+    estimatedWeightPerItem: item.estimatedWeightPerItem,
+    actuelWeightPerItem: item.actuelWeightPerItem,
     actualCost: 0,
     quantity: quantity,
     orderedWebsite: item.orderedWebsite,

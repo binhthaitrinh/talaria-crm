@@ -54,12 +54,12 @@ const itemSchema = mongoose.Schema(
       default: 0.0,
       min: [0, 'Shipping Fee cannot be negative'],
     },
-    estimatedWeight: {
+    estimatedWeightPerItem: {
       type: mongoose.Decimal128,
       default: 0.0,
       min: [0, 'Weight cannot be negative'],
     },
-    actualWeight: {
+    actualWeightPerItem: {
       type: mongoose.Decimal128,
       default: 0.0,
       min: [0, 'Weight cannot be negative'],
@@ -201,10 +201,12 @@ itemSchema.statics.calcBill = async function (doc) {
       {
         $match: {
           bill: doc.bill,
-          chargable: true,
+          chargeable: true,
         },
       },
     ]);
+
+    console.log(items);
 
     let totalBillCost = 0;
     let moneyChargeCustomerUSD = 0;
@@ -221,16 +223,23 @@ itemSchema.statics.calcBill = async function (doc) {
     } = bill;
 
     items.forEach((item) => {
-      const {
+      let {
         usShippingFee,
         pricePerItem,
         quantity,
         orderedWebsite,
-        estimatedWeight,
+        estimatedWeightPerItem,
         shippingExtraBase,
       } = item;
 
-      // TODO: calc shipping Extra Fee
+      usShippingFee = parseFloat(usShippingFee);
+      pricePerItem = parseFloat(pricePerItem);
+      quantity = parseFloat(quantity);
+      estimatedWeightPerItem = parseFloat(estimatedWeightPerItem);
+
+      console.log('Shipping Extra ', shippingExtraBase);
+
+      // TODO: test calc shipping Extra Fee
       if (shippingExtraBase.unit === 'usd') {
         totalShippingExtra += shippingExtraBase.value * quantity;
       } else if (shippingExtraBase.unit === 'vnd') {
@@ -264,7 +273,9 @@ itemSchema.statics.calcBill = async function (doc) {
         ) / MUL;
 
       totalEstimatedWeight =
-        Math.round(totalEstimatedWeight * MUL + estimatedWeight * MUL) / MUL;
+        Math.round(
+          totalEstimatedWeight * MUL + estimatedWeightPerItem * quantity * MUL
+        ) / MUL;
 
       // if (item.commissionRateForAffiliate === undefined) {
       //   commissionForAffiliate +=
@@ -351,7 +362,6 @@ itemSchema.post(/^findOneAnd/, async function () {
 });
 
 itemSchema.post('save', function (doc) {
-  console.log(doc);
   if (doc.bill) {
     this.constructor.calcBill(doc);
   }

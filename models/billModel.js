@@ -22,7 +22,8 @@ const billSchema = mongoose.Schema(
     // ],
     usdVndRate: {
       type: mongoose.Decimal128,
-      required: [true, 'A bill must have usd/vnd rate'],
+      default: 23500,
+      // required: [true, 'A bill must have usd/vnd rate'],
     },
     customer: {
       type: mongoose.Schema.ObjectId,
@@ -127,13 +128,13 @@ billSchema.pre('save', async function (next) {
   next();
 });
 
-billSchema.post('save', async function () {
-  await Compensation.create({
-    bill: this._id,
-    status: 'bill-not-paid',
-    //  affiliate: this.affiliate,
-  });
-});
+// billSchema.post('save', async function () {
+//   await Compensation.create({
+//     bill: this._id,
+//     status: 'bill-not-paid',
+//     //  affiliate: this.affiliate,
+//   });
+// });
 
 // TODO: handle when no affiliate is added yet
 
@@ -146,6 +147,15 @@ billSchema.statics.customerPay = async function (id, amount) {
   if (bill.status === 'fully-paid') {
     return new AppError('Bill already paid', 400);
   }
+
+  const transaction = await Transaction.create({
+    toAccount: '5f5001e0cd8a2f37929a1c3e',
+    amountReceived: {
+      value: amount,
+      currency: 'vnd',
+    },
+    bill: id,
+  });
 
   // // update amountPaid
   // const moneyReceived = parseFloat(bill.moneyReceived) + parseFloat(amount);
@@ -176,15 +186,6 @@ billSchema.statics.customerPay = async function (id, amount) {
     { returnOriginal: false }
   );
 
-  const transaction = await Transaction.create({
-    toAccount: '5f24a4e06666190fbdf6e7bc',
-    amountReceived: {
-      value: amount,
-      currency: 'vnd',
-    },
-    bill: id,
-  });
-
   // await Account.findOneAndUpdate(
   //   { loginID: 'VND_ACCOUNT' },
   //   {
@@ -194,16 +195,12 @@ billSchema.statics.customerPay = async function (id, amount) {
   //   }
   // );
 
+  // TODO: calc commissionForAffiliate not done
   if (newBill.status === 'fully-paid') {
     await Compensation.findOneAndUpdate(
       { bill: bill._id },
       {
-        amount:
-          Math.round(
-            parseFloat(bill.actualChargeCustomer) *
-              100000000 *
-              parseFloat(bill.affiliate.commissionRate)
-          ) / 100000000,
+        amount: bill.commissionForAffiliate,
         status: 'pending',
       }
     );
@@ -232,8 +229,6 @@ billSchema.statics.calcCommission = async function (doc) {
 
   let commissionForAffiliate = 0;
   doc.items.forEach((item) => {
-    console.log(item);
-    console.log(item.commissionRateForAffiliate);
     let singleCom;
     if (item.commissionRateForAffiliate !== undefined) {
       singleCom =
@@ -243,25 +238,25 @@ billSchema.statics.calcCommission = async function (doc) {
           (1 + parseFloat(item.tax) * 1) +
           parseFloat(item.usShippingFee) * 1);
     } else {
-      console.log(
-        'asdqw',
-        parseFloat(doc.affiliate.commissionRate[item.orderedWebsite])
-      );
       singleCom =
         parseFloat(doc.affiliate.commissionRate[item.orderedWebsite]) *
         (parseFloat(item.pricePerItem) *
           parseFloat(item.quantity) *
           (1 + parseFloat(item.tax) * 1) +
           parseFloat(item.usShippingFee) * 1);
-      console.log('asdqw', parseFloat(singleCom));
     }
     commissionForAffiliate += singleCom;
   });
 
-  await this.findOneAndUpdate(
+  const newBill = await this.findOneAndUpdate(
     { _id: doc._id },
-    { commissionForAffiliate: commissionForAffiliate }
+    { commissionForAffiliate: commissionForAffiliate },
+    {
+      returnOriginal: false,
+    }
   );
+
+  return newBill;
 };
 
 const billModel = mongoose.model('Bill', billSchema);

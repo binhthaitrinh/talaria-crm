@@ -232,6 +232,8 @@ itemSchema.statics.calcBill = async function (doc) {
         shippingExtraBase,
       } = item;
 
+      console.log(estimatedWeightPerItem);
+
       usShippingFee = parseFloat(usShippingFee);
       pricePerItem = parseFloat(pricePerItem);
       quantity = parseFloat(quantity);

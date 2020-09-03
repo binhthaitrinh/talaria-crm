@@ -1,6 +1,7 @@
 const factory = require('./handleFactory');
 const Bill = require('../models/billModel');
 const Item = require('../models/itemModel');
+const Compensation = require('../models/compensationModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -104,3 +105,45 @@ exports.calcCommission = catchAsync(async (req, res, next) => {
     data: null,
   });
 });
+
+// TODO: add route for "creating" a bill
+exports.fakeCreateBill = catchAsync(async (req, res, next) => {
+  if (!req.body.affiliate) {
+    return next(
+      new AppError('There must be an affiliate associated with bill', 400)
+    );
+  }
+  if (!req.body.usdVndRate) {
+    return next(new AppError('There must be USD/VND rate', 400));
+  }
+
+  const doc = await Bill.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!doc) {
+    return next(new AppError('No bill with that ID', 400));
+  }
+
+  if (doc.items) {
+    await Item.calcBill(doc.items[0]);
+  }
+
+  const newBill = await Bill.calcCommission(doc);
+
+  await Compensation.create({
+    bill: doc._id,
+    status: 'bill-not-paid',
+    affiliate: req.body.affiliate,
+    amount: newBill.commissionForAffiliate,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      data: newBill,
+    },
+  });
+});
+// TODO: double check calc affiliate commission

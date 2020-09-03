@@ -8,6 +8,8 @@ billRouter.patch('/:id/updatePrice', billControllers.updatePrice);
 
 billRouter.patch('/:id/commissionForAffiliate', billControllers.calcCommission);
 
+billRouter.patch('/:id/fakeCreateBill', billControllers.fakeCreateBill);
+
 billRouter
   .route('/:id')
   .get(billControllers.getBill)

@@ -28,7 +28,7 @@ const billSchema = mongoose.Schema(
     customer: {
       type: mongoose.Schema.ObjectId,
       ref: 'Customer',
-      required: [true, 'A bill must belong to a customer'],
+      // required: [true, 'A bill must belong to a customer'],
     },
     affiliate: {
       type: mongoose.Schema.ObjectId,
